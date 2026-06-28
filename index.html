@@ -312,7 +312,8 @@
       <div class="flex-1 max-w-xl">
         <div class="relative">
           <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input id="global-search" type="text" class="w-full pl-10 pr-4 py-2.5 text-sm border rounded-md outline-none transition" style="background:#F8FAFC;border-color:#E2E8F0;color:#0F172A;border-radius:6px" placeholder="Cari dokumen… (AI Semantic Search — Phase 4)" onfocus="this.style.borderColor='#2563EB';this.style.background='#fff'" onblur="this.style.borderColor='#E2E8F0';this.style.background='#F8FAFC'" />
+          <input id="global-search" type="text" class="w-full pl-10 pr-4 py-2.5 text-sm border rounded-md outline-none transition" style="background:#F8FAFC;border-color:#E2E8F0;color:#0F172A;border-radius:6px" placeholder="Cari dokumen ISO… (ketik lalu Enter)" onfocus="this.style.borderColor='#2563EB';this.style.background='#fff'" onblur="this.style.borderColor='#E2E8F0';this.style.background='#F8FAFC'"
+            onkeydown="if(event.key==='Enter'&&this.value.trim()){navigateTo('documents');setTimeout(()=>{document.getElementById('doc-search-input').value=this.value;applyDocFilters();},300)}" />
         </div>
       </div>
       <div class="flex items-center gap-4 ml-6">
@@ -376,21 +377,95 @@
         </div>
       </div>
 
-      <!-- PAGE: DOCUMENTS -->
+      <!-- PAGE: DOCUMENTS (Phase 3 — fully functional) -->
       <div id="page-documents" class="page">
-        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Pengendalian Dokumen</h1>
-        <p class="text-sm mb-6" style="color:#64748B">Cari, lihat, dan kelola dokumen ISO yang berlaku.</p>
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Pengendalian Dokumen</h1>
+            <p class="text-sm" style="color:#64748B">Cari, lihat, dan kelola dokumen ISO yang berlaku.</p>
+          </div>
+          <div class="flex gap-2 admin-only">
+            <button onclick="openUploadModal()" class="btn-secondary text-xs py-1.5 px-3">⬆ Upload Dokumen</button>
+            <button onclick="handleExportMasterList()" id="btn-export-master" class="btn-primary text-xs py-1.5 px-3">⬇ Export Master List</button>
+          </div>
+        </div>
+
+        <!-- Search + Filter bar -->
+        <div class="card mb-4">
+          <div class="flex gap-3 items-center flex-wrap">
+            <div class="relative flex-1 min-w-48">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input id="doc-search-input" type="text" class="form-input pl-9" placeholder="Cari nama dokumen, nomor, kategori…" oninput="handleDocSearch(this.value)" />
+            </div>
+            <select id="doc-category-filter" class="form-input" style="width:auto;min-width:160px" onchange="applyDocFilters()">
+              <option value="">Semua Kategori</option>
+              <option value="Manual Mutu">Manual Mutu</option>
+              <option value="Prosedur">Prosedur</option>
+              <option value="Instruksi Kerja">Instruksi Kerja</option>
+              <option value="Formulir">Formulir</option>
+            </select>
+            <select id="doc-status-filter" class="form-input admin-only" style="width:auto;min-width:130px" onchange="applyDocFilters()">
+              <option value="Current">Status: Current</option>
+              <option value="All">Semua Status</option>
+              <option value="Obsolete">Obsolete</option>
+            </select>
+            <button onclick="loadDocuments()" class="btn-secondary text-xs py-2 px-3">↻ Refresh</button>
+          </div>
+        </div>
+
+        <!-- Document Table -->
         <div class="card">
-          <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center justify-between mb-3">
             <h2 class="section-title">Master List Dokumen</h2>
-            <div class="flex gap-2 admin-only">
-              <button class="btn-secondary text-xs py-1.5 px-3">⬆ Upload Dokumen</button>
-              <button class="btn-primary text-xs py-1.5 px-3">⬇ Export Master List</button>
+            <p class="text-xs" style="color:#64748B" id="doc-count">Memuat…</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table w-full" id="doc-table">
+              <thead>
+                <tr>
+                  <th>No. Dokumen</th>
+                  <th>Nama Dokumen</th>
+                  <th>Kategori</th>
+                  <th>Versi</th>
+                  <th>Status</th>
+                  <th>Diperbarui</th>
+                  <th>Ukuran</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="doc-table-body">
+                <tr><td colspan="8" class="text-center py-10" style="color:#64748B">
+                  <div class="flex flex-col items-center gap-2">
+                    <div style="width:24px;height:24px;border:3px solid rgba(37,99,235,0.2);border-top-color:#2563EB;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+                    <p class="text-sm">Memuat dokumen dari Google Drive…</p>
+                  </div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Document Viewer Panel -->
+        <div id="doc-viewer-panel" class="card mt-5 hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h2 class="section-title" id="viewer-doc-title">Preview Dokumen</h2>
+              <p class="text-xs mt-1" style="color:#64748B" id="viewer-doc-meta">—</p>
+            </div>
+            <div class="flex gap-2 items-center">
+              <button onclick="handleAcknowledge()" id="btn-acknowledge" class="btn-success text-xs py-1.5 px-3">✓ Saya Sudah Membaca</button>
+              <button onclick="handleDownload()" id="btn-download" class="btn-primary text-xs py-1.5 px-3">⬇ Unduh PDF</button>
+              <button onclick="closeViewer()" class="text-xs px-3 py-1.5 rounded border transition" style="border-color:#E2E8F0;color:#64748B">✕ Tutup</button>
             </div>
           </div>
-          <div class="rounded-lg p-6 text-center" style="background:#F8FAFC;border:1px dashed #CBD5E1">
-            <p class="text-sm font-medium" style="color:#334155">Integrasi Google Drive — Phase 3</p>
-            <p class="text-xs mt-1" style="color:#64748B">Modul dokumen akan aktif setelah Phase 3 selesai.</p>
+          <!-- PDF/Docs iframe viewer -->
+          <div class="rounded-lg overflow-hidden border" style="border-color:#E2E8F0;height:600px">
+            <iframe id="doc-iframe" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+          </div>
+          <!-- Acknowledge log (Admin can see who acknowledged) -->
+          <div id="ack-log-section" class="mt-4 hidden admin-only">
+            <h3 class="text-sm font-semibold italic mb-2" style="color:#334155">Log Konfirmasi Baca</h3>
+            <div id="ack-log-body" class="text-xs" style="color:#64748B">Memuat…</div>
           </div>
         </div>
       </div>
@@ -549,6 +624,132 @@
     <div class="flex gap-3 justify-end">
       <button onclick="closeModal('modal-reject')" class="btn-secondary">Batal</button>
       <button id="btn-confirm-reject" onclick="confirmReject()" class="btn-danger">Tolak Pendaftaran</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Upload Document Modal -->
+<div id="modal-upload" class="modal-overlay hidden">
+  <div class="modal-box" style="width:520px;max-height:90vh;overflow-y:auto">
+    <h3 class="text-base font-bold mb-1" style="color:#0F172A">Upload Dokumen Baru</h3>
+    <p class="text-sm mb-5" style="color:#64748B">File akan disimpan ke folder kategori di Google Drive.</p>
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">No. Dokumen</label>
+          <input id="upload-docno" type="text" class="form-input" placeholder="QP-001" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Versi</label>
+          <input id="upload-version" type="text" class="form-input" placeholder="01" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Kategori <span style="color:#EF4444">*</span></label>
+        <select id="upload-category" class="form-input">
+          <option value="">— Pilih Kategori —</option>
+          <option value="Manual Mutu">Manual Mutu</option>
+          <option value="Prosedur">Prosedur</option>
+          <option value="Instruksi Kerja">Instruksi Kerja</option>
+          <option value="Formulir">Formulir</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Deskripsi (opsional)</label>
+        <input id="upload-description" type="text" class="form-input" placeholder="Ringkasan isi dokumen…" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Pilih File <span style="color:#EF4444">*</span></label>
+        <div id="upload-dropzone" class="rounded-lg border-2 border-dashed p-6 text-center cursor-pointer transition"
+          style="border-color:#CBD5E1"
+          ondragover="event.preventDefault();this.style.borderColor='#2563EB';this.style.background='#EFF6FF'"
+          ondragleave="this.style.borderColor='#CBD5E1';this.style.background=''"
+          ondrop="handleFileDrop(event)"
+          onclick="document.getElementById('upload-file-input').click()">
+          <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          <p class="text-sm font-medium" style="color:#334155" id="upload-file-label">Klik atau drag & drop file di sini</p>
+          <p class="text-xs mt-1" style="color:#64748B">PDF, Word, Excel — Maks. 10 MB</p>
+        </div>
+        <input id="upload-file-input" type="file" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx" onchange="handleFileSelect(this)" />
+      </div>
+      <div id="upload-progress-section" class="hidden">
+        <div class="flex justify-between text-xs mb-1.5" style="color:#334155">
+          <span>Mengupload ke Google Drive…</span>
+          <span id="upload-progress-pct">0%</span>
+        </div>
+        <div class="w-full rounded-full h-2" style="background:#E2E8F0">
+          <div id="upload-progress-bar" class="h-2 rounded-full transition-all" style="background:#2563EB;width:0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3 justify-end mt-6">
+      <button onclick="closeModal('modal-upload')" class="btn-secondary">Batal</button>
+      <button id="btn-confirm-upload" onclick="handleUpload()" class="btn-primary">⬆ Upload Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Document Metadata Modal -->
+<div id="modal-edit-doc" class="modal-overlay hidden">
+  <div class="modal-box" style="width:480px">
+    <h3 class="text-base font-bold mb-1" style="color:#0F172A">Edit Metadata Dokumen</h3>
+    <p class="text-sm mb-5" style="color:#64748B" id="edit-doc-name-label">—</p>
+    <input type="hidden" id="edit-doc-id" />
+    <input type="hidden" id="edit-doc-category" />
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">No. Dokumen</label>
+          <input id="edit-docno" type="text" class="form-input" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Versi</label>
+          <input id="edit-version" type="text" class="form-input" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Nama File</label>
+        <input id="edit-filename" type="text" class="form-input" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Status Dokumen</label>
+        <select id="edit-status" class="form-input">
+          <option value="Current">Current (Berlaku)</option>
+          <option value="Obsolete">Obsolete (Usang)</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Deskripsi</label>
+        <input id="edit-description" type="text" class="form-input" />
+      </div>
+    </div>
+    <div class="flex gap-3 justify-end mt-6">
+      <button onclick="closeModal('modal-edit-doc')" class="btn-secondary">Batal</button>
+      <button id="btn-confirm-edit-doc" onclick="confirmEditDoc()" class="btn-primary">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Move Document Modal -->
+<div id="modal-move-doc" class="modal-overlay hidden">
+  <div class="modal-box" style="width:400px">
+    <h3 class="text-base font-bold mb-1" style="color:#0F172A">Pindah Kategori Dokumen</h3>
+    <p class="text-sm mb-5" style="color:#64748B" id="move-doc-name-label">—</p>
+    <input type="hidden" id="move-doc-id" />
+    <div class="mb-5">
+      <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Pindahkan ke Kategori</label>
+      <select id="move-target-category" class="form-input">
+        <option value="Manual Mutu">Manual Mutu</option>
+        <option value="Prosedur">Prosedur</option>
+        <option value="Instruksi Kerja">Instruksi Kerja</option>
+        <option value="Formulir">Formulir</option>
+        <option value="Obsolete">_Obsolete (Arsip Usang)</option>
+      </select>
+    </div>
+    <div class="flex gap-3 justify-end">
+      <button onclick="closeModal('modal-move-doc')" class="btn-secondary">Batal</button>
+      <button id="btn-confirm-move" onclick="confirmMoveDoc()" class="btn-primary">Pindahkan</button>
     </div>
   </div>
 </div>
@@ -1041,8 +1242,9 @@ function navigateTo(pageName) {
   if (nav)  nav.classList.add('active');
   state.page = pageName;
 
-  // Load data when navigating to users page
-  if (pageName === 'users' && state.user?.role === 'admin') loadUsers();
+  // Load data when navigating to specific pages
+  if (pageName === 'users'     && state.user?.role === 'admin') loadUsers();
+  if (pageName === 'documents')                                  loadDocuments();
 }
 
 
@@ -1119,6 +1321,424 @@ function renderApp() {
 
   document.getElementById('auth-wrapper').classList.remove('hidden');
 })();
+
+
+// ════════════════════════════════════════════════════════════
+// PHASE 3 — DOCUMENT MANAGEMENT (Google Drive)
+// ════════════════════════════════════════════════════════════
+
+// ── State for documents ────────────────────────────────────
+const docState = {
+  allDocs:        [],
+  filteredDocs:   [],
+  currentDoc:     null,   // currently previewed document
+  uploadFile:     null,   // staged File object for upload
+  searchTimeout:  null,
+};
+
+// ── Load all documents from GAS/Drive ─────────────────────
+async function loadDocuments() {
+  const tbody = document.getElementById('doc-table-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10" style="color:#64748B">
+    <div class="flex flex-col items-center gap-2">
+      <div style="width:24px;height:24px;border:3px solid rgba(37,99,235,0.2);border-top-color:#2563EB;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+      <p class="text-sm">Memuat dari Google Drive…</p>
+    </div></td></tr>`;
+
+  const statusFilter = document.getElementById('doc-status-filter')?.value || 'Current';
+  const res = await api('get_documents', { status_filter: statusFilter });
+
+  if (!res.success) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8" style="color:#EF4444"><p class="text-sm">⚠ ${res.message}</p></td></tr>`;
+    return;
+  }
+
+  docState.allDocs = res.data || [];
+  applyDocFilters();
+}
+
+// ── Apply category + search filters locally ────────────────
+function applyDocFilters() {
+  const catFilter = document.getElementById('doc-category-filter')?.value || '';
+  const searchVal = document.getElementById('doc-search-input')?.value.toLowerCase() || '';
+
+  docState.filteredDocs = docState.allDocs.filter(doc => {
+    const matchCat    = !catFilter || doc.category === catFilter;
+    const matchSearch = !searchVal ||
+      doc.name.toLowerCase().includes(searchVal) ||
+      doc.docNo.toLowerCase().includes(searchVal) ||
+      doc.category.toLowerCase().includes(searchVal) ||
+      (doc.description || '').toLowerCase().includes(searchVal);
+    return matchCat && matchSearch;
+  });
+
+  renderDocTable(docState.filteredDocs);
+}
+
+// ── Debounced search ───────────────────────────────────────
+function handleDocSearch(value) {
+  clearTimeout(docState.searchTimeout);
+  docState.searchTimeout = setTimeout(() => applyDocFilters(), 300);
+}
+
+// ── Render document table ──────────────────────────────────
+function renderDocTable(docs) {
+  const tbody    = document.getElementById('doc-table-body');
+  const countEl  = document.getElementById('doc-count');
+  const isAdmin  = state.user?.role === 'admin';
+
+  if (countEl) countEl.textContent = docs.length + ' dokumen ditemukan';
+
+  if (docs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10" style="color:#64748B">
+      <svg class="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:#CBD5E1"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <p class="text-sm">Tidak ada dokumen. Upload dokumen pertama Anda!</p>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = docs.map(doc => {
+    const statusBadge = doc.status === 'Current'
+      ? '<span class="badge badge-approved">● Current</span>'
+      : '<span class="badge badge-rejected">Obsolete</span>';
+
+    const modifiedDate = doc.modifiedAt
+      ? new Date(doc.modifiedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '—';
+
+    const mimeIcon = doc.mimeType?.includes('pdf') ? '📄'
+      : doc.mimeType?.includes('spreadsheet') || doc.mimeType?.includes('excel') ? '📊'
+      : doc.mimeType?.includes('document') || doc.mimeType?.includes('word') ? '📝'
+      : '📁';
+
+    const adminActions = isAdmin ? `
+      <button onclick="openEditDocModal(${JSON.stringify(doc).replace(/"/g, '&quot;')})" class="text-xs px-2 py-1 rounded transition" style="color:#2563EB" title="Edit metadata">✏</button>
+      <button onclick="openMoveDocModal('${doc.id}','${doc.name.replace(/'/g,"\\'")}'')" class="text-xs px-2 py-1 rounded transition" style="color:#64748B" title="Pindah kategori">↔</button>
+    ` : '';
+
+    return `<tr>
+      <td class="font-mono text-xs" style="color:#64748B">${doc.docNo || '—'}</td>
+      <td>
+        <div class="flex items-center gap-2">
+          <span>${mimeIcon}</span>
+          <button onclick="openViewer(${JSON.stringify(doc).replace(/"/g, '&quot;')})" class="text-left font-medium hover:underline" style="color:#1E3A8A">${doc.name}</button>
+        </div>
+      </td>
+      <td><span class="badge" style="background:#EFF6FF;color:#1D4ED8">${doc.category}</span></td>
+      <td class="font-mono text-xs text-center" style="color:#334155">v${doc.version}</td>
+      <td>${statusBadge}</td>
+      <td style="color:#64748B;font-size:12px">${modifiedDate}</td>
+      <td style="color:#64748B;font-size:12px">${doc.sizeLabel}</td>
+      <td>
+        <div class="flex items-center gap-1">
+          <button onclick="openViewer(${JSON.stringify(doc).replace(/"/g, '&quot;')})" class="text-xs px-2 py-1 rounded transition" style="color:#2563EB" title="Preview">👁 Preview</button>
+          ${adminActions}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Document Viewer ────────────────────────────────────────
+function openViewer(doc) {
+  docState.currentDoc = doc;
+  const panel = document.getElementById('doc-viewer-panel');
+  panel.classList.remove('hidden');
+
+  document.getElementById('viewer-doc-title').textContent = doc.name;
+  document.getElementById('viewer-doc-meta').textContent  =
+    `${doc.category} | No: ${doc.docNo || '—'} | Versi: ${doc.version} | Status: ${doc.status}`;
+
+  document.getElementById('doc-iframe').src = doc.previewUrl;
+  document.getElementById('btn-download').setAttribute('data-id',      doc.id);
+  document.getElementById('btn-download').setAttribute('data-name',    doc.name);
+  document.getElementById('btn-download').setAttribute('data-version', doc.version);
+  document.getElementById('btn-acknowledge').setAttribute('data-id',   doc.id);
+  document.getElementById('btn-acknowledge').setAttribute('data-name', doc.name);
+  document.getElementById('btn-acknowledge').setAttribute('data-ver',  doc.version);
+
+  // Scroll to viewer
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Load acknowledge log for admin
+  if (state.user?.role === 'admin') {
+    const ackSection = document.getElementById('ack-log-section');
+    ackSection.classList.remove('hidden');
+    loadAckLog(doc.id);
+  }
+}
+
+function closeViewer() {
+  document.getElementById('doc-viewer-panel').classList.add('hidden');
+  document.getElementById('doc-iframe').src = '';
+  docState.currentDoc = null;
+}
+
+// ── Download (logged) ──────────────────────────────────────
+async function handleDownload() {
+  const btn     = document.getElementById('btn-download');
+  const fileId  = btn.getAttribute('data-id');
+  const name    = btn.getAttribute('data-name');
+  const version = btn.getAttribute('data-version');
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  const res = await api('log_download', { file_id: fileId, file_name: name, file_version: version });
+
+  btn.disabled = false;
+  btn.textContent = '⬇ Unduh PDF';
+
+  if (res.success) {
+    window.open(res.downloadUrl, '_blank');
+    showToast('Download dimulai. Log unduhan dicatat.', 'success');
+  } else {
+    showToast(res.message, 'error');
+  }
+}
+
+// ── Read & Acknowledge ─────────────────────────────────────
+async function handleAcknowledge() {
+  const btn  = document.getElementById('btn-acknowledge');
+  const doc  = docState.currentDoc;
+  if (!doc) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  const res = await api('acknowledge_document', {
+    payload: {
+      document_id:      doc.id,
+      document_name:    doc.name,
+      document_version: doc.version,
+      user_nama:        state.user?.nama || '',
+    }
+  });
+
+  btn.disabled = false;
+  if (res.success) {
+    btn.textContent = '✓ Sudah Dikonfirmasi';
+    btn.style.background = '#059669';
+    showToast('Konfirmasi berhasil dicatat. Terima kasih.', 'success');
+    if (state.user?.role === 'admin') loadAckLog(doc.id);
+  } else {
+    btn.textContent = '✓ Saya Sudah Membaca';
+    showToast(res.message, 'error');
+  }
+}
+
+// ── Load acknowledge log ───────────────────────────────────
+async function loadAckLog(docId) {
+  const body = document.getElementById('ack-log-body');
+  body.innerHTML = 'Memuat log…';
+
+  const res = await api('get_acknowledges', { document_id: docId });
+  if (!res.success || !res.data?.length) {
+    body.innerHTML = 'Belum ada konfirmasi baca untuk dokumen ini.';
+    return;
+  }
+
+  body.innerHTML = `<div class="overflow-x-auto mt-1">
+    <table class="data-table w-full">
+      <thead><tr><th>Email</th><th>Nama</th><th>Waktu Konfirmasi</th></tr></thead>
+      <tbody>
+        ${res.data.filter(r => r.ip_address !== 'GAS_UPLOAD' && r.ip_address !== 'DOWNLOAD_LOG')
+          .map(r => `<tr>
+            <td style="font-size:12px">${r.user_email}</td>
+            <td style="font-size:12px">${r.user_nama}</td>
+            <td style="font-size:12px;color:#64748B">${new Date(r.acknowledged_at).toLocaleString('id-ID')}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// ── Export Master List ─────────────────────────────────────
+async function handleExportMasterList() {
+  const btn = document.getElementById('btn-export-master');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Mengekspor…';
+
+  const res = await api('export_master_list');
+
+  btn.disabled = false;
+  btn.textContent = '⬇ Export Master List';
+
+  if (res.success) {
+    showToast(`${res.message} (${res.totalDocs} dokumen)`, 'success');
+    if (res.sheetUrl) window.open(res.sheetUrl, '_blank');
+  } else {
+    showToast(res.message, 'error');
+  }
+}
+
+// ── Upload Handlers ────────────────────────────────────────
+function openUploadModal() {
+  docState.uploadFile = null;
+  document.getElementById('upload-file-label').textContent = 'Klik atau drag & drop file di sini';
+  document.getElementById('upload-file-input').value = '';
+  document.getElementById('upload-progress-section').classList.add('hidden');
+  document.getElementById('upload-docno').value = '';
+  document.getElementById('upload-version').value = '01';
+  document.getElementById('upload-category').value = '';
+  document.getElementById('upload-description').value = '';
+  openModal('modal-upload');
+}
+
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Ukuran file maksimal 10 MB.', 'error');
+    return;
+  }
+  docState.uploadFile = file;
+  document.getElementById('upload-file-label').textContent = `✓ ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
+  document.getElementById('upload-dropzone').style.borderColor = '#10B981';
+  document.getElementById('upload-dropzone').style.background  = '#ECFDF5';
+}
+
+function handleFileDrop(event) {
+  event.preventDefault();
+  document.getElementById('upload-dropzone').style.borderColor = '#CBD5E1';
+  document.getElementById('upload-dropzone').style.background  = '';
+  const file = event.dataTransfer.files[0];
+  if (file) {
+    const input = document.getElementById('upload-file-input');
+    // Simulate file input change
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    handleFileSelect(input);
+  }
+}
+
+async function handleUpload() {
+  const file     = docState.uploadFile;
+  const category = document.getElementById('upload-category').value;
+
+  if (!file)     { showToast('Pilih file terlebih dahulu.', 'error'); return; }
+  if (!category) { showToast('Pilih kategori dokumen.', 'error'); return; }
+
+  const btn = document.getElementById('btn-confirm-upload');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Mengupload…';
+
+  // Show progress bar (simulated during base64 encoding)
+  const progSection = document.getElementById('upload-progress-section');
+  const progBar     = document.getElementById('upload-progress-bar');
+  const progPct     = document.getElementById('upload-progress-pct');
+  progSection.classList.remove('hidden');
+
+  try {
+    // Read file as base64
+    const base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = e => {
+        progBar.style.width = '40%'; progPct.textContent = '40%';
+        resolve(e.target.result.split(',')[1]);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    progBar.style.width = '70%'; progPct.textContent = '70%';
+
+    const res = await api('upload_document', {
+      payload: {
+        fileName:    file.name,
+        base64Data,
+        mimeType:    file.type || 'application/octet-stream',
+        category,
+        docNo:       document.getElementById('upload-docno').value.trim(),
+        version:     document.getElementById('upload-version').value.trim() || '01',
+        description: document.getElementById('upload-description').value.trim(),
+      }
+    });
+
+    progBar.style.width = '100%'; progPct.textContent = '100%';
+
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '⬆ Upload Sekarang';
+      progSection.classList.add('hidden');
+      progBar.style.width = '0%';
+
+      if (res.success) {
+        closeModal('modal-upload');
+        showToast('Dokumen berhasil diupload ke Google Drive!', 'success');
+        loadDocuments();
+      } else {
+        showToast(res.message, 'error');
+      }
+    }, 400);
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = '⬆ Upload Sekarang';
+    progSection.classList.add('hidden');
+    showToast('Gagal membaca file: ' + err.message, 'error');
+  }
+}
+
+// ── Edit Document Modal ────────────────────────────────────
+function openEditDocModal(doc) {
+  document.getElementById('edit-doc-id').value       = doc.id;
+  document.getElementById('edit-doc-name-label').textContent = doc.name;
+  document.getElementById('edit-doc-category').value = doc.category;
+  document.getElementById('edit-docno').value         = doc.docNo || '';
+  document.getElementById('edit-version').value       = doc.version || '01';
+  document.getElementById('edit-filename').value      = doc.name;
+  document.getElementById('edit-status').value        = doc.status || 'Current';
+  document.getElementById('edit-description').value   = doc.description || '';
+  openModal('modal-edit-doc');
+}
+
+async function confirmEditDoc() {
+  const fileId = document.getElementById('edit-doc-id').value;
+  const btn    = document.getElementById('btn-confirm-edit-doc');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+
+  const res = await api('update_document_meta', {
+    file_id: fileId,
+    updates: {
+      docNo:       document.getElementById('edit-docno').value.trim(),
+      version:     document.getElementById('edit-version').value.trim(),
+      fileName:    document.getElementById('edit-filename').value.trim(),
+      status:      document.getElementById('edit-status').value,
+      description: document.getElementById('edit-description').value.trim(),
+      category:    document.getElementById('edit-doc-category').value,
+    }
+  });
+
+  btn.disabled = false; btn.textContent = 'Simpan Perubahan';
+  closeModal('modal-edit-doc');
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) loadDocuments();
+}
+
+// ── Move Document Modal ────────────────────────────────────
+function openMoveDocModal(fileId, fileName) {
+  document.getElementById('move-doc-id').value = fileId;
+  document.getElementById('move-doc-name-label').textContent = fileName;
+  openModal('modal-move-doc');
+}
+
+async function confirmMoveDoc() {
+  const fileId   = document.getElementById('move-doc-id').value;
+  const target   = document.getElementById('move-target-category').value;
+  const btn      = document.getElementById('btn-confirm-move');
+  btn.disabled   = true; btn.textContent = 'Memindahkan…';
+
+  const res = await api('move_document', { file_id: fileId, target_category: target });
+
+  btn.disabled = false; btn.textContent = 'Pindahkan';
+  closeModal('modal-move-doc');
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) loadDocuments();
+}
 </script>
 </body>
 </html>
