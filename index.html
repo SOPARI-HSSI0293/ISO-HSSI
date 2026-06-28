@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISO-DocTrack — Document Control & Audit Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            primary: { DEFAULT: '#1E3A8A', hover: '#1e40af', light: '#2563EB' },
+            surface: '#FFFFFF', bg: '#F8FAFC', border: '#E2E8F0', stripe: '#F1F5F9',
+            slate: { 900: '#0F172A', 700: '#334155', 500: '#64748B' },
+            status: { major: '#EF4444', minor: '#F59E0B', closed: '#10B981' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background-color: #F8FAFC; color: #334155; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #F1F5F9; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+
+    .section-title { font-size: 18px; font-weight: 600; color: #0F172A; padding-left: 12px; border-left: 4px solid #2563EB; }
+
+    .data-table th { background: #F1F5F9; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B; text-align: left; padding: 10px 14px; border-bottom: 1px solid #E2E8F0; }
+    .data-table td { padding: 10px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #E2E8F0; vertical-align: middle; }
+    .data-table tbody tr:nth-child(even) td { background: #F1F5F9; }
+    .data-table tbody tr:hover td { background: #EFF6FF; }
+
+    .badge { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
+    .badge-major    { background: #FEE2E2; color: #DC2626; }
+    .badge-minor    { background: #FEF3C7; color: #D97706; }
+    .badge-obs      { background: #D1FAE5; color: #059669; }
+    .badge-open     { background: #FEE2E2; color: #DC2626; }
+    .badge-progress { background: #FEF3C7; color: #D97706; }
+    .badge-closed   { background: #D1FAE5; color: #059669; }
+    .badge-pending  { background: #FEF3C7; color: #D97706; }
+    .badge-approved { background: #D1FAE5; color: #059669; }
+    .badge-rejected { background: #FEE2E2; color: #DC2626; }
+    .badge-admin    { background: #DBEAFE; color: #1D4ED8; }
+    .badge-guest    { background: #F1F5F9; color: #475569; }
+
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #94A3B8; cursor: pointer; transition: all 0.15s ease; }
+    .nav-item:hover, .nav-item.active { background: rgba(37,99,235,0.15); color: #FFFFFF; }
+    .nav-item.active { border-left: 3px solid #2563EB; padding-left: 11px; }
+
+    .btn-primary { background: #2563EB; color: #fff; font-weight: 600; font-size: 13px; padding: 8px 18px; border-radius: 6px; border: none; cursor: pointer; transition: background 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary:hover:not(:disabled) { background: #1E3A8A; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-secondary { background: transparent; color: #2563EB; font-weight: 600; font-size: 13px; padding: 8px 18px; border-radius: 6px; border: 1.5px solid #2563EB; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-secondary:hover { background: #EFF6FF; }
+    .btn-danger { background: #EF4444; color: #fff; font-weight: 600; font-size: 12px; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; transition: background 0.15s; }
+    .btn-danger:hover { background: #DC2626; }
+    .btn-success { background: #10B981; color: #fff; font-weight: 600; font-size: 12px; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; transition: background 0.15s; }
+    .btn-success:hover { background: #059669; }
+
+    .card { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; }
+
+    .form-input { width: 100%; border: 1px solid #E2E8F0; border-radius: 6px; padding: 9px 12px; font-size: 13px; color: #0F172A; background: #F8FAFC; outline: none; transition: border-color 0.15s; box-sizing: border-box; }
+    .form-input:focus { border-color: #2563EB; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.12); display: flex; align-items: center; gap: 8px; max-width: 360px; animation: slideUp 0.3s ease; }
+    .toast-success { background: #10B981; color: #fff; }
+    .toast-error   { background: #EF4444; color: #fff; }
+    .toast-info    { background: #1E3A8A; color: #fff; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Loading spinner */
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Password strength bar */
+    .pw-bar { height: 4px; border-radius: 2px; transition: width 0.3s, background 0.3s; }
+
+    /* Modal overlay */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
+    .modal-box { background: #fff; border-radius: 10px; padding: 28px; width: 440px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+
+    /* Demo banner */
+    .demo-banner { background: #FEF3C7; border: 1px solid #F59E0B; color: #92400E; font-size: 12px; font-weight: 500; padding: 8px 14px; border-radius: 6px; display: flex; align-items: center; gap: 6px; }
+  </style>
+</head>
+<body class="h-full antialiased">
+
+<!-- ══════════════════════════════════════════════════════════
+     AUTH WRAPPER
+══════════════════════════════════════════════════════════ -->
+<div id="auth-wrapper" class="hidden min-h-screen flex items-center justify-center px-4 py-8">
+
+  <!-- ── Panel: Login ────────────────────────────────────── -->
+  <div id="panel-login" class="w-full max-w-md">
+    <div class="card shadow-xl">
+
+      <!-- Brand -->
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#1E3A8A">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-bold text-base" style="color:#0F172A">ISO-DocTrack</p>
+          <p class="text-xs" style="color:#64748B">Document Control & Audit Management</p>
+        </div>
+      </div>
+
+      <!-- Demo banner (hidden when GAS connected) -->
+      <div id="demo-banner-login" class="demo-banner mb-5 hidden">
+        ⚠️ Mode Demo — isi GAS_URL di script untuk koneksi nyata.
+      </div>
+
+      <h1 class="text-xl font-bold mb-1" style="color:#0F172A">Masuk ke Sistem</h1>
+      <p class="text-sm mb-6" style="color:#64748B">Gunakan akun yang telah disetujui Document Controller.</p>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Alamat Email</label>
+          <input id="login-email" type="email" class="form-input" placeholder="nama@perusahaan.com" onkeydown="if(event.key==='Enter')handleLogin()" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Password</label>
+          <div class="relative">
+            <input id="login-password" type="password" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()" style="padding-right:40px" />
+            <button type="button" onclick="togglePw('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs" style="color:#64748B">Lihat</button>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button onclick="switchPanel('forgot')" class="text-xs font-medium" style="color:#2563EB">Lupa Password?</button>
+        </div>
+        <button id="btn-login" onclick="handleLogin()" class="btn-primary w-full justify-center">Masuk</button>
+      </div>
+
+      <div class="mt-5 pt-5 border-t text-center" style="border-color:#E2E8F0">
+        <p class="text-xs" style="color:#64748B">
+          Belum punya akun?
+          <button onclick="switchPanel('register')" class="font-semibold" style="color:#2563EB">Daftar sekarang</button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel: Register ─────────────────────────────────── -->
+  <div id="panel-register" class="w-full max-w-md hidden">
+    <div class="card shadow-xl">
+      <button onclick="switchPanel('login')" class="flex items-center gap-1 text-sm font-medium mb-6" style="color:#2563EB">
+        ← Kembali ke Login
+      </button>
+      <h1 class="text-xl font-bold mb-1" style="color:#0F172A">Daftar Akun</h1>
+      <p class="text-sm mb-6" style="color:#64748B">Akun aktif setelah disetujui Admin (Document Controller).</p>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Nama Lengkap</label>
+          <input id="reg-nama" type="text" class="form-input" placeholder="Nama sesuai ID karyawan" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Email Perusahaan</label>
+          <input id="reg-email" type="email" class="form-input" placeholder="nama@perusahaan.com" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Password</label>
+          <div class="relative">
+            <input id="reg-password" type="password" class="form-input" placeholder="Min. 8 karakter" oninput="checkPwStrength(this.value)" style="padding-right:40px" />
+            <button type="button" onclick="togglePw('reg-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs" style="color:#64748B">Lihat</button>
+          </div>
+          <!-- Password strength indicator -->
+          <div class="mt-2">
+            <div class="flex gap-1 mb-1">
+              <div id="pw-bar-1" class="pw-bar flex-1" style="background:#E2E8F0"></div>
+              <div id="pw-bar-2" class="pw-bar flex-1" style="background:#E2E8F0"></div>
+              <div id="pw-bar-3" class="pw-bar flex-1" style="background:#E2E8F0"></div>
+              <div id="pw-bar-4" class="pw-bar flex-1" style="background:#E2E8F0"></div>
+            </div>
+            <p id="pw-label" class="text-xs" style="color:#64748B">Minimal 8 karakter, kombinasi huruf & angka.</p>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Konfirmasi Password</label>
+          <input id="reg-confirm" type="password" class="form-input" placeholder="Ulangi password" onkeydown="if(event.key==='Enter')handleRegister()" />
+        </div>
+        <button id="btn-register" onclick="handleRegister()" class="btn-primary w-full justify-center">Kirim Pendaftaran</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel: Forgot Password ──────────────────────────── -->
+  <div id="panel-forgot" class="w-full max-w-md hidden">
+    <div class="card shadow-xl">
+      <button onclick="switchPanel('login')" class="flex items-center gap-1 text-sm font-medium mb-6" style="color:#2563EB">
+        ← Kembali ke Login
+      </button>
+      <h1 class="text-xl font-bold mb-1" style="color:#0F172A">Reset Password</h1>
+      <p class="text-sm mb-6" style="color:#64748B">Masukkan email terdaftar. Link reset akan dikirim ke inbox Anda.</p>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Alamat Email</label>
+          <input id="forgot-email" type="email" class="form-input" placeholder="nama@perusahaan.com" onkeydown="if(event.key==='Enter')handleForgot()" />
+        </div>
+        <button id="btn-forgot" onclick="handleForgot()" class="btn-primary w-full justify-center">Kirim Link Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel: Reset Password (deep-link from email) ────── -->
+  <div id="panel-reset" class="w-full max-w-md hidden">
+    <div class="card shadow-xl">
+      <h1 class="text-xl font-bold mb-1" style="color:#0F172A">Buat Password Baru</h1>
+      <p class="text-sm mb-6" style="color:#64748B">Token reset Anda valid. Masukkan password baru di bawah.</p>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Password Baru</label>
+          <input id="reset-password" type="password" class="form-input" placeholder="Min. 8 karakter" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Konfirmasi Password Baru</label>
+          <input id="reset-confirm" type="password" class="form-input" placeholder="Ulangi password baru" />
+        </div>
+        <button id="btn-reset" onclick="handleResetPassword()" class="btn-primary w-full justify-center">Perbarui Password</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /auth-wrapper -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════════════════════ -->
+<div id="app-wrapper" class="hidden min-h-screen flex">
+
+  <!-- ── Sidebar ────────────────────────────────────────── -->
+  <aside class="w-56 flex-shrink-0 flex flex-col" style="background:#0F172A">
+    <div class="px-4 py-5 border-b" style="border-color:#1E293B">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0" style="background:#2563EB">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-white leading-none">ISO-DocTrack</p>
+          <p class="text-xs mt-0.5" style="color:#64748B">Phase 2 — Auth Ready</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <p class="text-xs font-semibold uppercase tracking-widest px-3 mb-2 mt-1" style="color:#475569">Menu Utama</p>
+      <div class="nav-item" onclick="navigateTo('dashboard')" data-page="dashboard">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="navigateTo('documents')" data-page="documents">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Dokumen
+      </div>
+      <div class="nav-item" onclick="navigateTo('audit')" data-page="audit">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        Jadwal Audit
+      </div>
+      <div class="nav-item" onclick="navigateTo('findings')" data-page="findings">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        Temuan & CAPA
+      </div>
+      <div class="nav-item" onclick="navigateTo('kaizen')" data-page="kaizen">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        Kaizen / QCC
+      </div>
+
+      <div id="admin-nav-section" class="hidden">
+        <p class="text-xs font-semibold uppercase tracking-widest px-3 mt-5 mb-2" style="color:#475569">Administrasi</p>
+        <div class="nav-item" onclick="navigateTo('users')" data-page="users">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          Kelola Pengguna
+          <span id="pending-badge" class="ml-auto hidden text-xs font-bold px-1.5 py-0.5 rounded-full" style="background:#EF4444;color:#fff"></span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="px-3 py-4 border-t" style="border-color:#1E293B">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background:#2563EB" id="user-avatar">?</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-white truncate" id="user-name-sidebar">—</p>
+          <p class="text-xs truncate" style="color:#64748B" id="user-role-sidebar">—</p>
+        </div>
+        <button onclick="handleLogout()" title="Keluar" class="p-1.5 rounded transition" style="color:#64748B" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#64748B'">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ───────────────────────────────────── -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+
+    <!-- Top Bar -->
+    <header class="flex items-center justify-between px-6 py-3.5 border-b bg-white flex-shrink-0" style="border-color:#E2E8F0">
+      <div class="flex-1 max-w-xl">
+        <div class="relative">
+          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input id="global-search" type="text" class="w-full pl-10 pr-4 py-2.5 text-sm border rounded-md outline-none transition" style="background:#F8FAFC;border-color:#E2E8F0;color:#0F172A;border-radius:6px" placeholder="Cari dokumen… (AI Semantic Search — Phase 4)" onfocus="this.style.borderColor='#2563EB';this.style.background='#fff'" onblur="this.style.borderColor='#E2E8F0';this.style.background='#F8FAFC'" />
+        </div>
+      </div>
+      <div class="flex items-center gap-4 ml-6">
+        <span id="connection-status" class="text-xs px-2.5 py-1 rounded-full font-semibold" style="background:#D1FAE5;color:#059669">● TERHUBUNG</span>
+        <p class="text-xs" style="color:#64748B" id="current-date"></p>
+      </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-6">
+
+      <!-- PAGE: DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Dashboard</h1>
+        <p class="text-sm mb-6" style="color:#64748B">Ringkasan status sistem pengendalian dokumen & audit.</p>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="card border-l-4" style="border-left-color:#2563EB">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#64748B">Total Dokumen</p>
+            <p class="text-3xl font-bold" style="color:#0F172A">—</p>
+            <p class="text-xs mt-1" style="color:#10B981">Dokumen Berlaku</p>
+          </div>
+          <div class="card border-l-4" style="border-left-color:#EF4444">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#64748B">CAPA Terbuka</p>
+            <p class="text-3xl font-bold" style="color:#EF4444">—</p>
+            <p class="text-xs mt-1" style="color:#64748B">Butuh tindakan</p>
+          </div>
+          <div class="card border-l-4" style="border-left-color:#F59E0B">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#64748B">Audit Bulan Ini</p>
+            <p class="text-3xl font-bold" style="color:#F59E0B">—</p>
+            <p class="text-xs mt-1" style="color:#64748B">Dijadwalkan</p>
+          </div>
+          <div class="card border-l-4" style="border-left-color:#10B981">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#64748B">Kaizen Aktif</p>
+            <p class="text-3xl font-bold" style="color:#10B981">—</p>
+            <p class="text-xs mt-1" style="color:#64748B">In Progress</p>
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="section-title mb-4">Akses Cepat</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <button onclick="navigateTo('audit')" class="p-4 rounded-lg border text-left transition hover:border-blue-300 hover:bg-blue-50" style="border-color:#E2E8F0">
+              <div class="text-xl mb-1">📅</div>
+              <p class="text-sm font-semibold" style="color:#0F172A">Jadwal Audit</p>
+              <p class="text-xs mt-0.5" style="color:#64748B">Lihat & kelola jadwal</p>
+            </button>
+            <button onclick="navigateTo('findings')" class="p-4 rounded-lg border text-left transition hover:border-blue-300 hover:bg-blue-50" style="border-color:#E2E8F0">
+              <div class="text-xl mb-1">🔍</div>
+              <p class="text-sm font-semibold" style="color:#0F172A">Temuan & CAPA</p>
+              <p class="text-xs mt-0.5" style="color:#64748B">Catat & analisis</p>
+            </button>
+            <button onclick="navigateTo('kaizen')" class="p-4 rounded-lg border text-left transition hover:border-blue-300 hover:bg-blue-50" style="border-color:#E2E8F0">
+              <div class="text-xl mb-1">📈</div>
+              <p class="text-sm font-semibold" style="color:#0F172A">Kaizen / QCC</p>
+              <p class="text-xs mt-0.5" style="color:#64748B">Perbaikan berkelanjutan</p>
+            </button>
+            <button onclick="navigateTo('documents')" class="p-4 rounded-lg border text-left transition hover:border-blue-300 hover:bg-blue-50" style="border-color:#E2E8F0">
+              <div class="text-xl mb-1">📄</div>
+              <p class="text-sm font-semibold" style="color:#0F172A">Dokumen</p>
+              <p class="text-xs mt-0.5" style="color:#64748B">Cari & unduh</p>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: DOCUMENTS -->
+      <div id="page-documents" class="page">
+        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Pengendalian Dokumen</h1>
+        <p class="text-sm mb-6" style="color:#64748B">Cari, lihat, dan kelola dokumen ISO yang berlaku.</p>
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="section-title">Master List Dokumen</h2>
+            <div class="flex gap-2 admin-only">
+              <button class="btn-secondary text-xs py-1.5 px-3">⬆ Upload Dokumen</button>
+              <button class="btn-primary text-xs py-1.5 px-3">⬇ Export Master List</button>
+            </div>
+          </div>
+          <div class="rounded-lg p-6 text-center" style="background:#F8FAFC;border:1px dashed #CBD5E1">
+            <p class="text-sm font-medium" style="color:#334155">Integrasi Google Drive — Phase 3</p>
+            <p class="text-xs mt-1" style="color:#64748B">Modul dokumen akan aktif setelah Phase 3 selesai.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: AUDIT -->
+      <div id="page-audit" class="page">
+        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Jadwal Audit</h1>
+        <p class="text-sm mb-6" style="color:#64748B">Internal Audit, Sertifikasi, dan Customer Audit.</p>
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="section-title">Jadwal Audit Aktif</h2>
+            <button class="btn-primary text-xs py-1.5 px-3 admin-only">+ Tambah Jadwal</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table w-full">
+              <thead><tr><th>Tipe Audit</th><th>Tanggal Mulai</th><th>Tanggal Selesai</th><th>Auditor</th><th>Area / Dept.</th><th>Status</th></tr></thead>
+              <tbody><tr><td colspan="6" class="text-center py-8" style="color:#64748B"><p class="text-sm">Belum ada jadwal terdaftar.</p></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: FINDINGS & CAPA -->
+      <div id="page-findings" class="page">
+        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Temuan Audit & CAPA</h1>
+        <p class="text-sm mb-6" style="color:#64748B">Catat temuan, analisis 5-Why, dan tindakan perbaikan.</p>
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="card text-center"><p class="text-2xl font-bold" style="color:#EF4444">0</p><p class="text-xs font-semibold mt-1" style="color:#64748B">Major NC</p></div>
+          <div class="card text-center"><p class="text-2xl font-bold" style="color:#F59E0B">0</p><p class="text-xs font-semibold mt-1" style="color:#64748B">Minor NC</p></div>
+          <div class="card text-center"><p class="text-2xl font-bold" style="color:#10B981">0</p><p class="text-xs font-semibold mt-1" style="color:#64748B">Observation</p></div>
+        </div>
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="section-title">Log Temuan</h2>
+            <button class="btn-primary text-xs py-1.5 px-3 admin-only">+ Catat Temuan Baru</button>
+          </div>
+          <div class="rounded-lg p-6 text-center" style="background:#F8FAFC;border:1px dashed #CBD5E1">
+            <p class="text-sm" style="color:#64748B">Modul akan sepenuhnya aktif di Phase 5.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: KAIZEN -->
+      <div id="page-kaizen" class="page">
+        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Kaizen & QCC</h1>
+        <p class="text-sm mb-6" style="color:#64748B">Repositori perbaikan berkelanjutan (Klausul 10 ISO).</p>
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="section-title">Proyek Aktif</h2>
+            <button class="btn-primary text-xs py-1.5 px-3 admin-only">+ Tambah Proyek</button>
+          </div>
+          <div class="rounded-lg p-6 text-center" style="background:#F8FAFC;border:1px dashed #CBD5E1">
+            <p class="text-sm" style="color:#64748B">Modul akan sepenuhnya aktif di Phase 5.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: USERS (Admin Only) -->
+      <div id="page-users" class="page">
+        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Manajemen Pengguna</h1>
+        <p class="text-sm mb-6" style="color:#64748B">Setujui pendaftaran dan kelola hak akses pengguna sistem.</p>
+
+        <!-- Pending approval callout -->
+        <div id="pending-callout" class="hidden mb-5 p-4 rounded-lg border-l-4 flex items-start gap-3" style="background:#FEF3C7;border-left-color:#F59E0B">
+          <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="#D97706" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <div>
+            <p class="text-sm font-semibold" style="color:#92400E" id="pending-callout-text">Ada pendaftaran yang menunggu persetujuan.</p>
+            <p class="text-xs mt-0.5" style="color:#B45309">Tinjau dan setujui atau tolak akun di bawah ini.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="section-title">Daftar Pengguna</h2>
+            <button onclick="loadUsers()" class="btn-secondary text-xs py-1.5 px-3">↻ Refresh</button>
+          </div>
+
+          <!-- Filter tabs -->
+          <div class="flex gap-2 mb-4">
+            <button onclick="filterUsers('all')"      id="filter-all"      class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#1E3A8A;color:#fff">Semua</button>
+            <button onclick="filterUsers('pending')"  id="filter-pending"  class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#F1F5F9;color:#475569">Pending</button>
+            <button onclick="filterUsers('approved')" id="filter-approved" class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#F1F5F9;color:#475569">Approved</button>
+            <button onclick="filterUsers('rejected')" id="filter-rejected" class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#F1F5F9;color:#475569">Rejected</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="data-table w-full" id="users-table">
+              <thead>
+                <tr>
+                  <th>Nama</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Terdaftar</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <tr><td colspan="6" class="text-center py-8" style="color:#64748B">
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="spinner" style="border-color:rgba(37,99,235,0.2);border-top-color:#2563EB;width:24px;height:24px;border-width:3px"></div>
+                    <p class="text-sm">Memuat data pengguna…</p>
+                  </div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div><!-- /app-wrapper -->
+
+<!-- ══════════════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════════════ -->
+
+<!-- Approve Modal -->
+<div id="modal-approve" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 class="text-base font-bold mb-1" style="color:#0F172A">Setujui Akun Pengguna</h3>
+    <p class="text-sm mb-4" style="color:#64748B">Pilih role untuk: <strong id="approve-email-label"></strong></p>
+    <div class="space-y-3 mb-5">
+      <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition hover:border-blue-300" style="border-color:#E2E8F0">
+        <input type="radio" name="approve-role" value="guest" checked class="accent-blue-600" />
+        <div>
+          <p class="text-sm font-semibold" style="color:#0F172A">Guest</p>
+          <p class="text-xs" style="color:#64748B">Hanya bisa melihat dokumen & status (Read-Only)</p>
+        </div>
+      </label>
+      <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition hover:border-blue-300" style="border-color:#E2E8F0">
+        <input type="radio" name="approve-role" value="admin" class="accent-blue-600" />
+        <div>
+          <p class="text-sm font-semibold" style="color:#0F172A">Admin (Document Controller)</p>
+          <p class="text-xs" style="color:#64748B">Akses penuh: upload, CAPA, kelola pengguna</p>
+        </div>
+      </label>
+    </div>
+    <div class="flex gap-3 justify-end">
+      <button onclick="closeModal('modal-approve')" class="btn-secondary">Batal</button>
+      <button id="btn-confirm-approve" onclick="confirmApprove()" class="btn-success">Setujui Akun</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="modal-reject" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 class="text-base font-bold mb-1" style="color:#0F172A">Tolak Pendaftaran</h3>
+    <p class="text-sm mb-4" style="color:#64748B">Email: <strong id="reject-email-label"></strong></p>
+    <div class="mb-5">
+      <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Alasan penolakan (opsional)</label>
+      <textarea id="reject-reason" class="form-input" rows="3" placeholder="Contoh: Email tidak sesuai domain perusahaan…"></textarea>
+    </div>
+    <div class="flex gap-3 justify-end">
+      <button onclick="closeModal('modal-reject')" class="btn-secondary">Batal</button>
+      <button id="btn-confirm-reject" onclick="confirmReject()" class="btn-danger">Tolak Pendaftaran</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT — Phase 2 (Full GAS Integration + RBAC)
+══════════════════════════════════════════════════════════ -->
+<script>
+// ════════════════════════════════════════════════════════════
+// CONFIG
+// Paste URL GAS Web App Anda di bawah ini.
+// Cara deploy: Apps Script → Deploy → New Deployment →
+//   Type: Web App | Execute as: Me | Access: Anyone
+// ════════════════════════════════════════════════════════════
+const GAS_URL = 'YOUR_GAS_WEB_APP_URL_HERE';
+
+// IS_DEMO = true  → gunakan data dummy offline (tidak perlu GAS)
+// IS_DEMO = false → semua request dikirim ke GAS_URL di atas
+const IS_DEMO = !GAS_URL || GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE';
+
+// ── App State ──────────────────────────────────────────────
+const state = {
+  token:         localStorage.getItem('iso_token') || null,
+  user:          JSON.parse(localStorage.getItem('iso_user') || 'null'),
+  page:          'dashboard',
+  allUsers:      [],
+  currentFilter: 'all',
+  pendingEmail:  null,   // target for approve/reject modal
+};
+
+
+// ════════════════════════════════════════════════════════════
+// API LAYER
+// GAS menerima POST dengan JSON body: { action, token?, ...payload }
+// Catatan CORS: GAS Web App hanya menerima no-cors dari browser,
+// sehingga kita gunakan mode: 'no-cors' dan redirect follow.
+// Solusi: GAS harus mengembalikan JSON via ContentService (sudah diset).
+// ════════════════════════════════════════════════════════════
+async function api(action, payload = {}) {
+  if (IS_DEMO) return demoApi(action, payload);
+
+  try {
+    // GAS Web App requires no-cors for cross-origin POST from static pages.
+    // We use a URLSearchParams wrapper trick: POST as form data to avoid CORS preflight.
+    const body = JSON.stringify({ action, token: state.token, ...payload });
+
+    const res = await fetch(GAS_URL, {
+      method:      'POST',
+      redirect:    'follow',
+      body:        body,
+    });
+
+    const text = await res.text();
+
+    // Strip any HTML wrapper GAS might prepend on error
+    const jsonStart = text.indexOf('{');
+    const jsonEnd   = text.lastIndexOf('}');
+    if (jsonStart === -1) {
+      console.error('GAS raw response:', text);
+      return { success: false, message: 'GAS tidak mengembalikan JSON. Pastikan deployment sudah benar dan "Execute as: Me", "Access: Anyone".' };
+    }
+
+    return JSON.parse(text.slice(jsonStart, jsonEnd + 1));
+  } catch (err) {
+    console.error('API error:', err);
+    return { success: false, message: 'Koneksi ke server gagal: ' + err.message };
+  }
+}
+
+// ── Demo API (offline mode, no GAS needed) ────────────────
+const _demoUsers = [
+  { id: 'u1', nama: 'System Administrator', email: 'admin@iso-doctrack.local', role: 'admin', status_approval: 'approved', created_at: '2025-01-01T00:00:00.000Z' },
+  { id: 'u2', nama: 'Budi Santoso',          email: 'budi@perusahaan.com',      role: 'guest', status_approval: 'pending',  created_at: new Date().toISOString() },
+  { id: 'u3', nama: 'Sari Dewi',             email: 'sari@perusahaan.com',      role: 'guest', status_approval: 'approved', created_at: '2025-06-01T00:00:00.000Z' },
+  { id: 'u4', nama: 'Anton Prasetyo',        email: 'anton@perusahaan.com',     role: 'guest', status_approval: 'rejected', created_at: '2025-05-15T00:00:00.000Z' },
+];
+
+function demoApi(action, payload) {
+  return new Promise(resolve => setTimeout(() => {
+    switch (action) {
+      case 'login': {
+        if (payload.email === 'admin@iso-doctrack.local' && payload.password === 'Admin@12345') {
+          resolve({ success: true, token: 'demo-token-admin', user: _demoUsers[0] });
+        } else if (payload.email === 'sari@perusahaan.com' && payload.password === 'password123') {
+          resolve({ success: true, token: 'demo-token-guest', user: _demoUsers[2] });
+        } else if (_demoUsers.find(u => u.email === payload.email && u.status_approval === 'pending')) {
+          resolve({ success: false, message: 'Akun menunggu persetujuan Admin (Document Controller).' });
+        } else {
+          resolve({ success: false, message: 'Email atau password salah.' });
+        }
+        break;
+      }
+      case 'register': {
+        if (_demoUsers.find(u => u.email === payload.email)) {
+          resolve({ success: false, message: 'Email sudah terdaftar.' });
+        } else {
+          _demoUsers.push({ id: 'u' + Date.now(), nama: payload.nama, email: payload.email, role: 'guest', status_approval: 'pending', created_at: new Date().toISOString() });
+          resolve({ success: true, message: 'Pendaftaran berhasil! Akun menunggu persetujuan Document Controller.' });
+        }
+        break;
+      }
+      case 'forgot_password':
+        resolve({ success: true, message: 'Jika email terdaftar, link reset telah dikirim.' });
+        break;
+      case 'validate_session':
+        resolve({ success: true, session: { user_email: state.user?.email, role: state.user?.role } });
+        break;
+      case 'logout':
+        resolve({ success: true });
+        break;
+      case 'get_all_users':
+        resolve({ success: true, data: _demoUsers });
+        break;
+      case 'approve_user': {
+        const u = _demoUsers.find(u => u.email === payload.target_email);
+        if (u) { u.status_approval = 'approved'; u.role = payload.role || 'guest'; }
+        resolve({ success: true, message: `Akun ${payload.target_email} disetujui.` });
+        break;
+      }
+      case 'reject_user': {
+        const u = _demoUsers.find(u => u.email === payload.target_email);
+        if (u) u.status_approval = 'rejected';
+        resolve({ success: true, message: `Pendaftaran ${payload.target_email} ditolak.` });
+        break;
+      }
+      default:
+        resolve({ success: false, message: 'Action belum diimplementasi di mode demo.' });
+    }
+  }, 400));
+}
+
+
+// ════════════════════════════════════════════════════════════
+// UI HELPERS
+// ════════════════════════════════════════════════════════════
+function showToast(message, type = 'success') {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  const icon = type === 'success'
+    ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>'
+    : type === 'error'
+    ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'
+    : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+  t.innerHTML = `<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">${icon}</svg><span>${message}</span>`;
+  document.body.appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 3000);
+  setTimeout(() => t.remove(), 3400);
+}
+
+function setLoading(btnId, loading, originalText) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? `<div class="spinner"></div> Memproses…`
+    : originalText;
+}
+
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+  btn.textContent = isPassword ? 'Sembunyikan' : 'Lihat';
+}
+
+function checkPwStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8)                        score++;
+  if (/[A-Z]/.test(pw))                      score++;
+  if (/[0-9]/.test(pw))                      score++;
+  if (/[^A-Za-z0-9]/.test(pw))              score++;
+
+  const colors = ['#EF4444', '#F59E0B', '#3B82F6', '#10B981'];
+  const labels = ['Sangat lemah', 'Lemah', 'Cukup kuat', 'Kuat'];
+
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.getElementById('pw-bar-' + i);
+    bar.style.background = i <= score ? colors[score - 1] : '#E2E8F0';
+  }
+  const label = document.getElementById('pw-label');
+  if (pw.length === 0) {
+    label.textContent = 'Minimal 8 karakter, kombinasi huruf & angka.';
+    label.style.color = '#64748B';
+  } else {
+    label.textContent = labels[score - 1] || 'Sangat lemah';
+    label.style.color = colors[score - 1] || '#EF4444';
+  }
+}
+
+function switchPanel(name) {
+  ['login', 'register', 'forgot', 'reset'].forEach(p => {
+    document.getElementById('panel-' + p).classList.toggle('hidden', p !== name);
+  });
+}
+
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+
+// ════════════════════════════════════════════════════════════
+// AUTH HANDLERS
+// ════════════════════════════════════════════════════════════
+
+// ── Login ──────────────────────────────────────────────────
+async function handleLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  if (!email || !password) {
+    showToast('Email dan password wajib diisi.', 'error');
+    return;
+  }
+
+  setLoading('btn-login', true, 'Masuk');
+  const res = await api('login', { email, password });
+  setLoading('btn-login', false, 'Masuk');
+
+  if (res.success) {
+    _setSession(res.token, res.user);
+    if (IS_DEMO) showToast('Mode Demo — Login berhasil sebagai ' + res.user.role + '.', 'info');
+  } else {
+    showToast(res.message, 'error');
+  }
+}
+
+// ── Register ───────────────────────────────────────────────
+async function handleRegister() {
+  const nama     = document.getElementById('reg-nama').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const confirm  = document.getElementById('reg-confirm').value;
+
+  if (!nama || !email || !password || !confirm) {
+    showToast('Semua field wajib diisi.', 'error');
+    return;
+  }
+  if (password.length < 8) {
+    showToast('Password minimal 8 karakter.', 'error');
+    return;
+  }
+  if (password !== confirm) {
+    showToast('Konfirmasi password tidak cocok.', 'error');
+    return;
+  }
+
+  setLoading('btn-register', true, 'Kirim Pendaftaran');
+  const res = await api('register', { nama, email, password });
+  setLoading('btn-register', false, 'Kirim Pendaftaran');
+
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) {
+    setTimeout(() => {
+      switchPanel('login');
+      document.getElementById('login-email').value = email;
+    }, 2000);
+  }
+}
+
+// ── Forgot Password ────────────────────────────────────────
+async function handleForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { showToast('Masukkan alamat email.', 'error'); return; }
+
+  setLoading('btn-forgot', true, 'Kirim Link Reset');
+  const res = await api('forgot_password', { email });
+  setLoading('btn-forgot', false, 'Kirim Link Reset');
+
+  showToast(res.message, res.success ? 'success' : 'error');
+}
+
+// ── Reset Password (deep-link from email) ─────────────────
+async function handleResetPassword() {
+  const newPw  = document.getElementById('reset-password').value;
+  const confirm = document.getElementById('reset-confirm').value;
+
+  if (!newPw || !confirm) { showToast('Semua field wajib diisi.', 'error'); return; }
+  if (newPw.length < 8)   { showToast('Password minimal 8 karakter.', 'error'); return; }
+  if (newPw !== confirm)  { showToast('Konfirmasi password tidak cocok.', 'error'); return; }
+
+  const resetToken = new URLSearchParams(window.location.search).get('token');
+  if (!resetToken) { showToast('Token reset tidak ditemukan.', 'error'); return; }
+
+  setLoading('btn-reset', true, 'Perbarui Password');
+  const res = await api('reset_password', { reset_token: resetToken, new_password: newPw });
+  setLoading('btn-reset', false, 'Perbarui Password');
+
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) {
+    setTimeout(() => {
+      // Clean URL and go to login
+      window.history.replaceState({}, '', window.location.pathname);
+      switchPanel('login');
+    }, 2000);
+  }
+}
+
+// ── Logout ─────────────────────────────────────────────────
+async function handleLogout() {
+  await api('logout');
+  state.token = null;
+  state.user  = null;
+  localStorage.removeItem('iso_token');
+  localStorage.removeItem('iso_user');
+  document.getElementById('app-wrapper').classList.add('hidden');
+  document.getElementById('auth-wrapper').classList.remove('hidden');
+  switchPanel('login');
+  showToast('Anda telah keluar dari sistem.', 'info');
+}
+
+// ── Set Session (post-login) ───────────────────────────────
+function _setSession(token, user) {
+  state.token = token;
+  state.user  = user;
+  localStorage.setItem('iso_token', token);
+  localStorage.setItem('iso_user', JSON.stringify(user));
+  renderApp();
+}
+
+
+// ════════════════════════════════════════════════════════════
+// USER MANAGEMENT (Admin)
+// ════════════════════════════════════════════════════════════
+async function loadUsers() {
+  const tbody = document.getElementById('users-table-body');
+  tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8" style="color:#64748B">
+    <div class="flex flex-col items-center gap-2">
+      <div style="width:24px;height:24px;border:3px solid rgba(37,99,235,0.2);border-top-color:#2563EB;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+      <p class="text-sm">Memuat data…</p>
+    </div></td></tr>`;
+
+  const res = await api('get_all_users');
+
+  if (!res.success) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8" style="color:#EF4444"><p class="text-sm">${res.message}</p></td></tr>`;
+    return;
+  }
+
+  state.allUsers = res.data;
+  renderUsersTable(state.currentFilter);
+
+  // Update pending badge
+  const pendingCount = res.data.filter(u => u.status_approval === 'pending').length;
+  const badge = document.getElementById('pending-badge');
+  const callout = document.getElementById('pending-callout');
+  if (pendingCount > 0) {
+    badge.textContent = pendingCount;
+    badge.classList.remove('hidden');
+    callout.classList.remove('hidden');
+    document.getElementById('pending-callout-text').textContent =
+      `${pendingCount} pendaftaran menunggu persetujuan.`;
+  } else {
+    badge.classList.add('hidden');
+    callout.classList.add('hidden');
+  }
+}
+
+function renderUsersTable(filter) {
+  state.currentFilter = filter;
+  const users = filter === 'all'
+    ? state.allUsers
+    : state.allUsers.filter(u => u.status_approval === filter);
+
+  // Update filter button styles
+  ['all', 'pending', 'approved', 'rejected'].forEach(f => {
+    const btn = document.getElementById('filter-' + f);
+    if (f === filter) {
+      btn.style.background = '#1E3A8A';
+      btn.style.color = '#fff';
+    } else {
+      btn.style.background = '#F1F5F9';
+      btn.style.color = '#475569';
+    }
+  });
+
+  const tbody = document.getElementById('users-table-body');
+
+  if (users.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8" style="color:#64748B"><p class="text-sm">Tidak ada pengguna dengan status ini.</p></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = users.map(u => {
+    const statusBadge = {
+      pending:  '<span class="badge badge-pending">● Pending</span>',
+      approved: '<span class="badge badge-approved">● Approved</span>',
+      rejected: '<span class="badge badge-rejected">● Rejected</span>',
+    }[u.status_approval] || u.status_approval;
+
+    const roleBadge = u.role === 'admin'
+      ? '<span class="badge badge-admin">Admin</span>'
+      : '<span class="badge badge-guest">Guest</span>';
+
+    const date = u.created_at ? new Date(u.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
+    const actions = u.status_approval === 'pending'
+      ? `<div class="flex gap-2">
+           <button onclick="openApproveModal('${u.email}')" class="btn-success">✓ Setujui</button>
+           <button onclick="openRejectModal('${u.email}')"  class="btn-danger">✕ Tolak</button>
+         </div>`
+      : u.status_approval === 'approved'
+      ? `<button onclick="openRejectModal('${u.email}')" class="text-xs" style="color:#64748B">Revoke</button>`
+      : `<button onclick="openApproveModal('${u.email}')" class="text-xs" style="color:#2563EB">Aktifkan kembali</button>`;
+
+    return `<tr>
+      <td><div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background:#2563EB">${(u.nama||'?')[0].toUpperCase()}</div>
+        <span class="font-medium" style="color:#0F172A">${u.nama}</span>
+      </div></td>
+      <td style="color:#64748B">${u.email}</td>
+      <td>${roleBadge}</td>
+      <td>${statusBadge}</td>
+      <td style="color:#64748B;font-size:12px">${date}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterUsers(filter) {
+  renderUsersTable(filter);
+}
+
+// ── Approve Modal ──────────────────────────────────────────
+function openApproveModal(email) {
+  state.pendingEmail = email;
+  document.getElementById('approve-email-label').textContent = email;
+  document.querySelector('input[name="approve-role"][value="guest"]').checked = true;
+  openModal('modal-approve');
+}
+
+async function confirmApprove() {
+  const role = document.querySelector('input[name="approve-role"]:checked')?.value || 'guest';
+  const btn  = document.getElementById('btn-confirm-approve');
+  btn.disabled = true;
+  btn.textContent = 'Memproses…';
+
+  const res = await api('approve_user', { target_email: state.pendingEmail, role });
+
+  btn.disabled = false;
+  btn.textContent = 'Setujui Akun';
+  closeModal('modal-approve');
+
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) loadUsers();
+}
+
+// ── Reject Modal ───────────────────────────────────────────
+function openRejectModal(email) {
+  state.pendingEmail = email;
+  document.getElementById('reject-email-label').textContent = email;
+  document.getElementById('reject-reason').value = '';
+  openModal('modal-reject');
+}
+
+async function confirmReject() {
+  const reason = document.getElementById('reject-reason').value.trim();
+  const btn    = document.getElementById('btn-confirm-reject');
+  btn.disabled = true;
+  btn.textContent = 'Memproses…';
+
+  const res = await api('reject_user', { target_email: state.pendingEmail, reason });
+
+  btn.disabled = false;
+  btn.textContent = 'Tolak Pendaftaran';
+  closeModal('modal-reject');
+
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) loadUsers();
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.add('hidden');
+  });
+});
+
+
+// ════════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════════
+function navigateTo(pageName) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const page = document.getElementById('page-' + pageName);
+  const nav  = document.querySelector(`[data-page="${pageName}"]`);
+  if (page) page.classList.add('active');
+  if (nav)  nav.classList.add('active');
+  state.page = pageName;
+
+  // Load data when navigating to users page
+  if (pageName === 'users' && state.user?.role === 'admin') loadUsers();
+}
+
+
+// ════════════════════════════════════════════════════════════
+// RENDER APP (post-login)
+// ════════════════════════════════════════════════════════════
+function renderApp() {
+  document.getElementById('auth-wrapper').classList.add('hidden');
+  document.getElementById('app-wrapper').classList.remove('hidden');
+
+  const u = state.user;
+  document.getElementById('user-name-sidebar').textContent = u.nama || u.email;
+  document.getElementById('user-role-sidebar').textContent  = u.role === 'admin' ? 'Admin / DC' : 'Guest';
+  document.getElementById('user-avatar').textContent        = (u.nama || u.email)[0].toUpperCase();
+
+  const isAdmin = u.role === 'admin';
+  document.getElementById('admin-nav-section').classList.toggle('hidden', !isAdmin);
+  document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !isAdmin));
+
+  document.getElementById('current-date').textContent =
+    new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  const statusEl = document.getElementById('connection-status');
+  if (IS_DEMO) {
+    statusEl.textContent = '⚠ MODE DEMO';
+    statusEl.style.background = '#FEF3C7';
+    statusEl.style.color = '#92400E';
+  } else {
+    statusEl.textContent = '● TERHUBUNG';
+    statusEl.style.background = '#D1FAE5';
+    statusEl.style.color = '#059669';
+  }
+
+  navigateTo('dashboard');
+}
+
+
+// ════════════════════════════════════════════════════════════
+// BOOT — Session restore + deep-link handler
+// ════════════════════════════════════════════════════════════
+(async function boot() {
+  const params = new URLSearchParams(window.location.search);
+
+  // Handle reset password deep-link (?action=reset&token=...)
+  if (params.get('action') === 'reset' && params.get('token')) {
+    document.getElementById('auth-wrapper').classList.remove('hidden');
+    switchPanel('reset');
+    return;
+  }
+
+  if (IS_DEMO) {
+    document.getElementById('demo-banner-login')?.classList.remove('hidden');
+  }
+
+  // Restore session from localStorage
+  if (state.token && state.user) {
+    // Validate against server (unless demo)
+    if (!IS_DEMO) {
+      const check = await api('validate_session');
+      if (!check.success) {
+        // Session expired server-side
+        state.token = null;
+        state.user  = null;
+        localStorage.removeItem('iso_token');
+        localStorage.removeItem('iso_user');
+        document.getElementById('auth-wrapper').classList.remove('hidden');
+        showToast('Sesi Anda telah berakhir. Silakan login kembali.', 'info');
+        return;
+      }
+    }
+    renderApp();
+    return;
+  }
+
+  document.getElementById('auth-wrapper').classList.remove('hidden');
+})();
+</script>
+</body>
+</html>
