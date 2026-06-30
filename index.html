@@ -267,6 +267,11 @@
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         Dokumen
       </div>
+      <div class="nav-item" onclick="navigateTo('search')" data-page="search">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+        AI Search
+        <span class="ml-auto text-xs px-1.5 py-0.5 rounded font-bold" style="background:#2563EB;color:#fff;font-size:9px">AI</span>
+      </div>
       <div class="nav-item" onclick="navigateTo('audit')" data-page="audit">
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
         Jadwal Audit
@@ -312,8 +317,12 @@
       <div class="flex-1 max-w-xl">
         <div class="relative">
           <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input id="global-search" type="text" class="w-full pl-10 pr-4 py-2.5 text-sm border rounded-md outline-none transition" style="background:#F8FAFC;border-color:#E2E8F0;color:#0F172A;border-radius:6px" placeholder="Cari dokumen ISO… (ketik lalu Enter)" onfocus="this.style.borderColor='#2563EB';this.style.background='#fff'" onblur="this.style.borderColor='#E2E8F0';this.style.background='#F8FAFC'"
-            onkeydown="if(event.key==='Enter'&&this.value.trim()){navigateTo('documents');setTimeout(()=>{document.getElementById('doc-search-input').value=this.value;applyDocFilters();},300)}" />
+          <input id="global-search" type="text" class="w-full pl-10 pr-4 py-2.5 text-sm border rounded-md outline-none transition" style="background:#F8FAFC;border-color:#E2E8F0;color:#0F172A;border-radius:6px"
+            placeholder="🔍 Cari dokumen ISO dengan bahasa alami… (AI Semantic Search)"
+            onfocus="this.style.borderColor='#2563EB';this.style.background='#fff'"
+            onblur="this.style.borderColor='#E2E8F0';this.style.background='#F8FAFC'"
+            oninput="handleGlobalSearchInput(this.value)"
+            onkeydown="if(event.key==='Enter'&&this.value.trim()){runSemanticSearch(this.value.trim())}" />
         </div>
       </div>
       <div class="flex items-center gap-4 ml-6">
@@ -374,6 +383,90 @@
               <p class="text-xs mt-0.5" style="color:#64748B">Cari & unduh</p>
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- PAGE: AI SEMANTIC SEARCH (Phase 4) -->
+      <div id="page-search" class="page">
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">AI Semantic Search</h1>
+          <p class="text-sm" style="color:#64748B">Cari menggunakan bahasa alami. AI akan menemukan pasal & klausul yang paling relevan.</p>
+        </div>
+
+        <!-- Big Search Box -->
+        <div class="card mb-5" style="border-color:#2563EB;border-width:2px">
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="ai-search-input" type="text" class="w-full pl-12 pr-32 py-4 text-base border-0 outline-none rounded-lg" style="color:#0F172A;background:transparent"
+              placeholder="Contoh: Bagaimana prosedur kalibrasi alat ukur yang baru dibeli?"
+              onkeydown="if(event.key==='Enter')handleAiSearch()" />
+            <button onclick="handleAiSearch()" id="btn-ai-search" class="btn-primary absolute right-3 top-1/2 -translate-y-1/2 py-2 px-4 text-sm">
+              Cari
+            </button>
+          </div>
+          <!-- Suggested queries -->
+          <div class="mt-3 pt-3 border-t flex flex-wrap gap-2" style="border-color:#E2E8F0">
+            <p class="text-xs w-full mb-1" style="color:#64748B">Contoh pertanyaan:</p>
+            <button onclick="quickSearch('Bagaimana prosedur penanganan produk tidak sesuai?')"       class="text-xs px-3 py-1.5 rounded-full border transition hover:border-blue-400 hover:bg-blue-50" style="border-color:#CBD5E1;color:#334155">Produk tidak sesuai</button>
+            <button onclick="quickSearch('Apa persyaratan kompetensi karyawan ISO 9001?')"            class="text-xs px-3 py-1.5 rounded-full border transition hover:border-blue-400 hover:bg-blue-50" style="border-color:#CBD5E1;color:#334155">Kompetensi karyawan</button>
+            <button onclick="quickSearch('Bagaimana cara melakukan audit internal yang efektif?')"    class="text-xs px-3 py-1.5 rounded-full border transition hover:border-blue-400 hover:bg-blue-50" style="border-color:#CBD5E1;color:#334155">Audit internal</button>
+            <button onclick="quickSearch('Prosedur pengendalian dokumen dan rekaman mutu')"           class="text-xs px-3 py-1.5 rounded-full border transition hover:border-blue-400 hover:bg-blue-50" style="border-color:#CBD5E1;color:#334155">Pengendalian dokumen</button>
+            <button onclick="quickSearch('Tindakan perbaikan corrective action ketidaksesuaian')"    class="text-xs px-3 py-1.5 rounded-full border transition hover:border-blue-400 hover:bg-blue-50" style="border-color:#CBD5E1;color:#334155">Corrective action</button>
+          </div>
+        </div>
+
+        <!-- Search Status / Mode Indicator -->
+        <div id="search-mode-indicator" class="hidden mb-4">
+          <div class="flex items-center gap-2">
+            <span id="search-mode-badge" class="text-xs px-2.5 py-1 rounded-full font-semibold"></span>
+            <p class="text-xs" style="color:#64748B" id="search-mode-desc"></p>
+          </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div id="search-results-container">
+
+          <!-- Empty state -->
+          <div id="search-empty-state" class="card text-center py-14">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#EFF6FF">
+              <svg class="w-8 h-8" fill="none" stroke="#2563EB" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            </div>
+            <h3 class="text-base font-semibold mb-1" style="color:#0F172A">AI Siap Mencari</h3>
+            <p class="text-sm" style="color:#64748B;max-width:420px;margin:0 auto">
+              Ketik pertanyaan dengan bahasa alami. AI akan menelusuri seluruh isi dokumen ISO
+              dan menampilkan bagian yang paling relevan beserta nomor klausulnya.
+            </p>
+          </div>
+
+          <!-- Loading state -->
+          <div id="search-loading" class="hidden">
+            <div class="card mb-3 animate-pulse" style="height:96px;background:#F1F5F9"></div>
+            <div class="card mb-3 animate-pulse" style="height:96px;background:#F1F5F9"></div>
+            <div class="card animate-pulse" style="height:96px;background:#F1F5F9"></div>
+            <p class="text-center text-sm mt-4" style="color:#64748B">
+              <span class="inline-flex items-center gap-2">
+                <span style="width:14px;height:14px;border:2px solid #CBD5E1;border-top-color:#2563EB;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block"></span>
+                AI sedang mencari di seluruh dokumen…
+              </span>
+            </p>
+          </div>
+
+          <!-- No results -->
+          <div id="search-no-results" class="hidden card text-center py-10">
+            <p class="text-2xl mb-2">🔍</p>
+            <p class="text-sm font-semibold" style="color:#334155">Tidak ada hasil ditemukan</p>
+            <p class="text-xs mt-1" style="color:#64748B">Coba pertanyaan yang berbeda, atau pastikan dokumen sudah di-index oleh pipeline Python.</p>
+          </div>
+
+          <!-- Results list -->
+          <div id="search-results-list" class="hidden space-y-4">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-sm font-semibold" style="color:#334155" id="search-result-count"></p>
+              <p class="text-xs" style="color:#64748B" id="search-elapsed"></p>
+            </div>
+            <!-- Cards injected here by JS -->
+          </div>
+
         </div>
       </div>
 
@@ -1738,6 +1831,207 @@ async function confirmMoveDoc() {
   closeModal('modal-move-doc');
   showToast(res.message, res.success ? 'success' : 'error');
   if (res.success) loadDocuments();
+}
+
+
+// ════════════════════════════════════════════════════════════
+// PHASE 4 — AI SEMANTIC SEARCH
+// ════════════════════════════════════════════════════════════
+
+const searchState = {
+  lastQuery:   '',
+  searchTimer: null,
+};
+
+// ── Global search bar input handler ───────────────────────
+function handleGlobalSearchInput(value) {
+  clearTimeout(searchState.searchTimer);
+  // Auto-navigate to search page after 300ms pause (but don't fire search yet)
+  if (value.trim().length > 2) {
+    searchState.searchTimer = setTimeout(() => {
+      navigateTo('search');
+      document.getElementById('ai-search-input').value = value;
+    }, 300);
+  }
+}
+
+// ── Quick-fill suggested query ─────────────────────────────
+function quickSearch(query) {
+  document.getElementById('ai-search-input').value = query;
+  document.getElementById('ai-search-input').focus();
+  runSemanticSearch(query);
+}
+
+// ── Handle Enter / button click from search page ───────────
+function handleAiSearch() {
+  const query = document.getElementById('ai-search-input').value.trim();
+  if (!query) {
+    showToast('Masukkan pertanyaan terlebih dahulu.', 'error');
+    return;
+  }
+  runSemanticSearch(query);
+}
+
+// ── Core: fire semantic search API ────────────────────────
+async function runSemanticSearch(query) {
+  if (!query || query.length < 3) return;
+  searchState.lastQuery = query;
+
+  // Sync global search bar
+  document.getElementById('global-search').value = query;
+  document.getElementById('ai-search-input').value = query;
+
+  // Navigate to search page
+  navigateTo('search');
+
+  // Show loading
+  _setSearchState('loading');
+
+  const btn = document.getElementById('btn-ai-search');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  const startTime = Date.now();
+  const res = await api('semantic_search', { query });
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+  btn.disabled = false;
+  btn.textContent = 'Cari';
+
+  if (!res.success) {
+    showToast(res.message || 'Pencarian gagal.', 'error');
+    _setSearchState('empty');
+    return;
+  }
+
+  if (!res.results || res.results.length === 0) {
+    _setSearchState('no-results');
+    return;
+  }
+
+  _setSearchState('results');
+  _renderSearchResults(res, elapsed);
+}
+
+// ── Show/hide UI states ────────────────────────────────────
+function _setSearchState(state) {
+  ['empty', 'loading', 'no-results', 'results'].forEach(s => {
+    const el = document.getElementById(
+      s === 'empty'      ? 'search-empty-state'  :
+      s === 'loading'    ? 'search-loading'       :
+      s === 'no-results' ? 'search-no-results'    :
+                           'search-results-list'
+    );
+    if (el) el.classList.toggle('hidden', s !== state);
+  });
+}
+
+// ── Render results ─────────────────────────────────────────
+function _renderSearchResults(res, elapsed) {
+  const listEl = document.getElementById('search-results-list');
+  const countEl = document.getElementById('search-result-count');
+  const elapsedEl = document.getElementById('search-elapsed');
+
+  if (countEl) countEl.textContent = `${res.total} dokumen relevan ditemukan untuk "${res.query}"`;
+  if (elapsedEl) elapsedEl.textContent = `${elapsed} detik`;
+
+  // Mode badge
+  const modeIndicator = document.getElementById('search-mode-indicator');
+  const modeBadge     = document.getElementById('search-mode-badge');
+  const modeDesc      = document.getElementById('search-mode-desc');
+  modeIndicator.classList.remove('hidden');
+
+  if (res.mode === 'semantic') {
+    modeBadge.textContent = '✦ AI Semantic';
+    modeBadge.style.background = '#DBEAFE';
+    modeBadge.style.color      = '#1D4ED8';
+    modeDesc.textContent = 'Hasil diurutkan berdasarkan kesamaan makna (vector similarity)';
+  } else {
+    modeBadge.textContent = '⌕ Keyword';
+    modeBadge.style.background = '#FEF3C7';
+    modeBadge.style.color      = '#92400E';
+    modeDesc.textContent = res.notice || 'Pencarian kata kunci. Konfigurasi Gemini + Supabase untuk AI penuh.';
+  }
+
+  // Result cards
+  listEl.innerHTML = '<div class="flex items-center justify-between mb-2">' +
+    `<p class="text-sm font-semibold" style="color:#334155">${res.total} dokumen relevan ditemukan untuk "<em>${res.query}</em>"</p>` +
+    `<p class="text-xs" style="color:#64748B">${elapsed} detik</p></div>` +
+    res.results.map((doc, i) => _buildResultCard(doc, i)).join('');
+}
+
+function _buildResultCard(doc, rank) {
+  const scoreColor =
+    doc.score_percent >= 80 ? '#10B981' :
+    doc.score_percent >= 55 ? '#F59E0B' : '#64748B';
+
+  const categoryBadge = doc.category
+    ? `<span class="badge" style="background:#EFF6FF;color:#1D4ED8">${doc.category}</span>`
+    : '';
+
+  const pasalBadge = doc.pasal_refs
+    ? `<span class="badge" style="background:#F0FDF4;color:#16A34A">§ ${doc.pasal_refs}</span>`
+    : '';
+
+  const snippetsHtml = (doc.snippets || []).map((s, si) => `
+    <div class="mt-2 p-3 rounded-md text-xs leading-relaxed" style="background:#F8FAFC;border-left:3px solid #2563EB;color:#334155">
+      ${s.pasal_ref ? `<span class="font-semibold" style="color:#2563EB">§ ${s.pasal_ref} — </span>` : ''}${s.text}
+    </div>`).join('');
+
+  return `
+    <div class="card hover:shadow-md transition-shadow" style="border-left:4px solid ${scoreColor}">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <span class="text-xs font-bold px-2 py-0.5 rounded" style="background:#F1F5F9;color:#475569">#${rank+1}</span>
+            ${categoryBadge}
+            ${pasalBadge}
+            ${doc.doc_no ? `<span class="text-xs font-mono" style="color:#64748B">${doc.doc_no}</span>` : ''}
+          </div>
+          <h3 class="font-semibold text-sm mb-1" style="color:#0F172A">${doc.doc_name}</h3>
+          <p class="text-xs" style="color:#64748B">Versi ${doc.version || '01'}</p>
+          ${snippetsHtml}
+        </div>
+        <div class="flex flex-col items-center flex-shrink-0 gap-2">
+          <div class="text-center">
+            <p class="text-xl font-bold" style="color:${scoreColor}">${doc.score_percent}%</p>
+            <p class="text-xs" style="color:#64748B">relevansi</p>
+          </div>
+          <button onclick="openDocumentById('${doc.doc_id}','${doc.doc_name.replace(/'/g, "\\'")}')"
+            class="btn-primary text-xs py-1.5 px-3 w-full justify-center">
+            Buka Dokumen
+          </button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Open document viewer from search result ────────────────
+async function openDocumentById(docId, docName) {
+  // Navigate to Dokumen page and open viewer
+  navigateTo('documents');
+
+  // If docs not loaded yet, load first
+  if (docState.allDocs.length === 0) await loadDocuments();
+
+  // Find doc in loaded list
+  const doc = docState.allDocs.find(d => d.id === docId);
+  if (doc) {
+    openViewer(doc);
+  } else {
+    // Build a minimal viewer entry from Drive URL
+    const previewUrl = `https://drive.google.com/file/d/${docId}/preview`;
+    openViewer({
+      id:          docId,
+      name:        docName,
+      previewUrl,
+      downloadUrl: `https://drive.google.com/uc?export=download&id=${docId}`,
+      category:    '',
+      docNo:       '',
+      version:     '01',
+      status:      'Current',
+    });
+  }
 }
 </script>
 </body>
