@@ -292,6 +292,10 @@
           Kelola Pengguna
           <span id="pending-badge" class="ml-auto hidden text-xs font-bold px-1.5 py-0.5 rounded-full" style="background:#EF4444;color:#fff"></span>
         </div>
+        <div class="nav-item" onclick="navigateTo('review')" data-page="review">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Management Review
+        </div>
       </div>
     </nav>
 
@@ -572,55 +576,274 @@
         </div>
       </div>
 
-      <!-- PAGE: AUDIT -->
+      <!-- PAGE: AUDIT (Phase 5 — fully functional) -->
       <div id="page-audit" class="page">
-        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Jadwal Audit</h1>
-        <p class="text-sm mb-6" style="color:#64748B">Internal Audit, Sertifikasi, dan Customer Audit.</p>
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Jadwal Audit</h1>
+            <p class="text-sm" style="color:#64748B">Internal Audit, Sertifikasi, dan Customer Audit.</p>
+          </div>
+          <button onclick="openAddScheduleModal()" class="btn-primary text-xs py-1.5 px-3 admin-only">+ Tambah Jadwal</button>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="flex gap-2 mb-4">
+          <button onclick="filterSchedules('all')"        id="sched-filter-all"        class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#1E3A8A;color:#fff">Semua</button>
+          <button onclick="filterSchedules('Scheduled')"   id="sched-filter-Scheduled"  class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#F1F5F9;color:#475569">Terjadwal</button>
+          <button onclick="filterSchedules('Ongoing')"     id="sched-filter-Ongoing"    class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#F1F5F9;color:#475569">Berlangsung</button>
+          <button onclick="filterSchedules('Completed')"   id="sched-filter-Completed"  class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#F1F5F9;color:#475569">Selesai</button>
+        </div>
+
         <div class="card">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="section-title">Jadwal Audit Aktif</h2>
-            <button class="btn-primary text-xs py-1.5 px-3 admin-only">+ Tambah Jadwal</button>
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="section-title">Jadwal Audit</h2>
+            <button onclick="loadSchedules()" class="btn-secondary text-xs py-1.5 px-3">↻ Refresh</button>
           </div>
           <div class="overflow-x-auto">
             <table class="data-table w-full">
-              <thead><tr><th>Tipe Audit</th><th>Tanggal Mulai</th><th>Tanggal Selesai</th><th>Auditor</th><th>Area / Dept.</th><th>Status</th></tr></thead>
-              <tbody><tr><td colspan="6" class="text-center py-8" style="color:#64748B"><p class="text-sm">Belum ada jadwal terdaftar.</p></td></tr></tbody>
+              <thead><tr>
+                <th>Tipe Audit</th><th>Tanggal Mulai</th><th>Tanggal Selesai</th>
+                <th>Auditor</th><th>Area / Dept.</th><th>Status</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="schedule-table-body">
+                <tr><td colspan="7" class="text-center py-10" style="color:#64748B">
+                  <div class="flex flex-col items-center gap-2">
+                    <div style="width:24px;height:24px;border:3px solid rgba(37,99,235,0.2);border-top-color:#2563EB;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+                    <p class="text-sm">Memuat jadwal audit…</p>
+                  </div>
+                </td></tr>
+              </tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- PAGE: FINDINGS & CAPA -->
+      <!-- PAGE: FINDINGS & CAPA (Phase 5 — fully functional) -->
       <div id="page-findings" class="page">
-        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Temuan Audit & CAPA</h1>
-        <p class="text-sm mb-6" style="color:#64748B">Catat temuan, analisis 5-Why, dan tindakan perbaikan.</p>
-        <div class="grid grid-cols-3 gap-4 mb-6">
-          <div class="card text-center"><p class="text-2xl font-bold" style="color:#EF4444">0</p><p class="text-xs font-semibold mt-1" style="color:#64748B">Major NC</p></div>
-          <div class="card text-center"><p class="text-2xl font-bold" style="color:#F59E0B">0</p><p class="text-xs font-semibold mt-1" style="color:#64748B">Minor NC</p></div>
-          <div class="card text-center"><p class="text-2xl font-bold" style="color:#10B981">0</p><p class="text-xs font-semibold mt-1" style="color:#64748B">Observation</p></div>
-        </div>
-        <div class="card">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="section-title">Log Temuan</h2>
-            <button class="btn-primary text-xs py-1.5 px-3 admin-only">+ Catat Temuan Baru</button>
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Temuan Audit & CAPA</h1>
+            <p class="text-sm" style="color:#64748B">Catat temuan, analisis 5-Why, dan tindakan perbaikan.</p>
           </div>
-          <div class="rounded-lg p-6 text-center" style="background:#F8FAFC;border:1px dashed #CBD5E1">
-            <p class="text-sm" style="color:#64748B">Modul akan sepenuhnya aktif di Phase 5.</p>
+          <button onclick="openAddFindingModal()" class="btn-primary text-xs py-1.5 px-3 admin-only">+ Catat Temuan Baru</button>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="card text-center" style="border-top:3px solid #EF4444">
+            <p class="text-2xl font-bold" style="color:#EF4444" id="findings-count-major">0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">Major NC</p>
+          </div>
+          <div class="card text-center" style="border-top:3px solid #F59E0B">
+            <p class="text-2xl font-bold" style="color:#F59E0B" id="findings-count-minor">0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">Minor NC</p>
+          </div>
+          <div class="card text-center" style="border-top:3px solid #10B981">
+            <p class="text-2xl font-bold" style="color:#10B981" id="findings-count-obs">0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">Observation</p>
+          </div>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="flex gap-2 mb-4">
+          <button onclick="filterFindings('all')"        id="find-filter-all"        class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#1E3A8A;color:#fff">Semua</button>
+          <button onclick="filterFindings('Open')"       id="find-filter-Open"       class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#F1F5F9;color:#475569">Open</button>
+          <button onclick="filterFindings('In Progress')" id="find-filter-In Progress" class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#F1F5F9;color:#475569">In Progress</button>
+          <button onclick="filterFindings('Closed')"     id="find-filter-Closed"     class="text-xs px-3 py-1.5 rounded-md font-semibold transition" style="background:#F1F5F9;color:#475569">Closed</button>
+        </div>
+
+        <div class="card">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="section-title">Log Temuan</h2>
+            <button onclick="loadFindings()" class="btn-secondary text-xs py-1.5 px-3">↻ Refresh</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table w-full">
+              <thead><tr>
+                <th>Klausul</th><th>Deskripsi Temuan</th><th>Kategori</th>
+                <th>PIC</th><th>Status CAPA</th><th>Due Date</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="findings-table-body">
+                <tr><td colspan="7" class="text-center py-10" style="color:#64748B">
+                  <div class="flex flex-col items-center gap-2">
+                    <div style="width:24px;height:24px;border:3px solid rgba(37,99,235,0.2);border-top-color:#2563EB;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+                    <p class="text-sm">Memuat temuan…</p>
+                  </div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CAPA Form Panel (5-Why Analysis) -->
+        <div id="capa-form-panel" class="card mt-6 hidden">
+          <div class="flex items-center justify-between mb-1">
+            <h2 class="section-title">Form CAPA — Root Cause Analysis</h2>
+            <button onclick="closeCapaForm()" class="text-xs px-3 py-1.5 rounded border transition" style="border-color:#E2E8F0;color:#64748B">✕ Tutup</button>
+          </div>
+          <p class="text-sm mb-4" style="color:#64748B">
+            Temuan: <strong id="capa-finding-ref" style="color:#0F172A">—</strong>
+          </p>
+          <input type="hidden" id="capa-finding-id" />
+
+          <!-- 5-Why Indented Structure -->
+          <div class="rounded-lg p-4 mb-4" style="background:#F8FAFC;border:1px solid #E2E8F0">
+            <h3 class="text-sm font-medium italic mb-3" style="color:#334155">5-Why Root Cause Analysis</h3>
+            <div class="space-y-3">
+              <div class="flex gap-3 items-start">
+                <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1" style="background:#2563EB">1</span>
+                <div class="flex-1">
+                  <label class="block text-xs font-semibold mb-1" style="color:#334155">Why pertama — Mengapa masalah terjadi?</label>
+                  <input type="text" class="form-input" id="capa-why1" placeholder="Jawab mengapa…" />
+                </div>
+              </div>
+              <div class="flex gap-3 items-start pl-6">
+                <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1" style="background:#2563EB">2</span>
+                <div class="flex-1">
+                  <label class="block text-xs font-semibold mb-1" style="color:#334155">Why kedua — Mengapa itu bisa terjadi?</label>
+                  <input type="text" class="form-input" id="capa-why2" placeholder="Telusuri lebih dalam…" />
+                </div>
+              </div>
+              <div class="flex gap-3 items-start pl-12">
+                <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1" style="background:#2563EB">3</span>
+                <div class="flex-1">
+                  <label class="block text-xs font-semibold mb-1" style="color:#334155">Why ketiga</label>
+                  <input type="text" class="form-input" id="capa-why3" placeholder="…" />
+                </div>
+              </div>
+              <div class="flex gap-3 items-start pl-20">
+                <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1" style="background:#2563EB">4</span>
+                <div class="flex-1">
+                  <label class="block text-xs font-semibold mb-1" style="color:#334155">Why keempat</label>
+                  <input type="text" class="form-input" id="capa-why4" placeholder="…" />
+                </div>
+              </div>
+              <div class="flex gap-3 items-start pl-28">
+                <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-1" style="background:#1E3A8A">5</span>
+                <div class="flex-1">
+                  <label class="block text-xs font-semibold mb-1" style="color:#0F172A">Why kelima — Akar Masalah Sesungguhnya</label>
+                  <input type="text" class="form-input" id="capa-why5" placeholder="Root cause ditemukan di sini" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Root Cause (Ringkasan)</label>
+              <textarea class="form-input" id="capa-root-cause" rows="3" placeholder="Kesimpulan akar penyebab…"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Corrective Action</label>
+              <textarea class="form-input" id="capa-corrective" rows="3" placeholder="Tindakan perbaikan langsung…"></textarea>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Preventive Action</label>
+              <textarea class="form-input" id="capa-preventive" rows="3" placeholder="Tindakan pencegahan agar tidak terulang…"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Target Penyelesaian</label>
+              <input type="date" class="form-input" id="capa-target-date" />
+              <label class="block text-xs font-semibold mb-1.5 mt-3" style="color:#334155">Status CAPA</label>
+              <select class="form-input" id="capa-status">
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Verified">Verified</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Evidence Upload Section -->
+          <div class="grid grid-cols-2 gap-4 mb-5">
+            <div>
+              <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Lampiran Bukti Perbaikan</label>
+              <div id="evidence-dropzone-bukti" class="rounded-lg border-2 border-dashed p-4 text-center cursor-pointer transition" style="border-color:#CBD5E1"
+                onclick="document.getElementById('evidence-file-bukti').click()">
+                <p class="text-xs font-medium" id="evidence-label-bukti" style="color:#334155">Klik untuk pilih file bukti</p>
+                <p class="text-xs mt-0.5" style="color:#64748B">Foto/PDF — Maks. 10 MB</p>
+              </div>
+              <input type="file" id="evidence-file-bukti" class="hidden" accept="image/*,.pdf" onchange="handleEvidenceSelect(this,'bukti')" />
+              <input type="hidden" id="capa-link-bukti" />
+              <div id="evidence-preview-bukti" class="mt-2 hidden">
+                <a id="evidence-link-bukti" target="_blank" class="text-xs underline" style="color:#2563EB">📎 Lihat lampiran tersimpan</a>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Diagram Ishikawa (Fishbone)</label>
+              <div id="evidence-dropzone-ishikawa" class="rounded-lg border-2 border-dashed p-4 text-center cursor-pointer transition" style="border-color:#CBD5E1"
+                onclick="document.getElementById('evidence-file-ishikawa').click()">
+                <p class="text-xs font-medium" id="evidence-label-ishikawa" style="color:#334155">Klik untuk pilih diagram</p>
+                <p class="text-xs mt-0.5" style="color:#64748B">Foto/PDF — Maks. 10 MB</p>
+              </div>
+              <input type="file" id="evidence-file-ishikawa" class="hidden" accept="image/*,.pdf" onchange="handleEvidenceSelect(this,'ishikawa')" />
+              <input type="hidden" id="capa-link-ishikawa" />
+              <div id="evidence-preview-ishikawa" class="mt-2 hidden">
+                <a id="evidence-link-ishikawa" target="_blank" class="text-xs underline" style="color:#2563EB">📎 Lihat diagram tersimpan</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 justify-end">
+            <button onclick="closeCapaForm()" class="btn-secondary">Batal</button>
+            <button id="btn-save-capa" onclick="handleSaveCapa()" class="btn-primary">Simpan CAPA</button>
           </div>
         </div>
       </div>
 
-      <!-- PAGE: KAIZEN -->
+      <!-- PAGE: KAIZEN (Phase 5 — fully functional) -->
       <div id="page-kaizen" class="page">
-        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Kaizen & QCC</h1>
-        <p class="text-sm mb-6" style="color:#64748B">Repositori perbaikan berkelanjutan (Klausul 10 ISO).</p>
-        <div class="card">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="section-title">Proyek Aktif</h2>
-            <button class="btn-primary text-xs py-1.5 px-3 admin-only">+ Tambah Proyek</button>
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Kaizen & QCC</h1>
+            <p class="text-sm" style="color:#64748B">Repositori perbaikan berkelanjutan (Klausul 10 ISO).</p>
           </div>
-          <div class="rounded-lg p-6 text-center" style="background:#F8FAFC;border:1px dashed #CBD5E1">
-            <p class="text-sm" style="color:#64748B">Modul akan sepenuhnya aktif di Phase 5.</p>
+          <button onclick="openAddKaizenModal()" class="btn-primary text-xs py-1.5 px-3 admin-only">+ Tambah Proyek</button>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="card text-center">
+            <p class="text-2xl font-bold" style="color:#0F172A" id="kaizen-count-total">0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">Total Proyek</p>
+          </div>
+          <div class="card text-center">
+            <p class="text-2xl font-bold" style="color:#F59E0B" id="kaizen-count-progress">0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">In Progress</p>
+          </div>
+          <div class="card text-center">
+            <p class="text-2xl font-bold" style="color:#10B981" id="kaizen-count-implemented">0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">Implemented</p>
+          </div>
+          <div class="card text-center">
+            <p class="text-2xl font-bold" style="color:#2563EB" id="kaizen-total-saving">Rp 0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">Est. Cost Saving</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="section-title">Proyek Aktif</h2>
+            <button onclick="loadKaizen()" class="btn-secondary text-xs py-1.5 px-3">↻ Refresh</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table w-full">
+              <thead><tr>
+                <th>Departemen</th><th>Judul Proyek</th><th>PIC</th><th>Kategori</th>
+                <th>Est. Cost Saving</th><th>Tanggal Mulai</th><th>Status</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="kaizen-table-body">
+                <tr><td colspan="8" class="text-center py-10" style="color:#64748B">
+                  <div class="flex flex-col items-center gap-2">
+                    <div style="width:24px;height:24px;border:3px solid rgba(37,99,235,0.2);border-top-color:#2563EB;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+                    <p class="text-sm">Memuat proyek Kaizen/QCC…</p>
+                  </div>
+                </td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -678,6 +901,65 @@
         </div>
       </div>
 
+      <!-- PAGE: MANAGEMENT REVIEW (Phase 5 — Looker Studio Embed) -->
+      <div id="page-review" class="page">
+        <h1 class="text-2xl font-bold mb-1" style="color:#0F172A">Management Review</h1>
+        <p class="text-sm mb-6" style="color:#64748B">Ringkasan tren temuan audit, status CAPA, dan progres Kaizen untuk Rapat Tinjauan Manajemen.</p>
+
+        <!-- Quick stat cards pulled from Sheets -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="card text-center">
+            <p class="text-2xl font-bold" style="color:#0F172A" id="review-total-findings">0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">Total Temuan</p>
+          </div>
+          <div class="card text-center">
+            <p class="text-2xl font-bold" style="color:#EF4444" id="review-capa-open">0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">CAPA Open</p>
+          </div>
+          <div class="card text-center">
+            <p class="text-2xl font-bold" style="color:#10B981" id="review-capa-closed">0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">CAPA Closed</p>
+          </div>
+          <div class="card text-center">
+            <p class="text-2xl font-bold" style="color:#2563EB" id="review-total-schedules">0</p>
+            <p class="text-xs font-semibold mt-1" style="color:#64748B">Total Jadwal Audit</p>
+          </div>
+        </div>
+
+        <!-- Looker Studio Embed -->
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="section-title">Dashboard Looker Studio</h2>
+            <button onclick="openLookerConfigModal()" class="btn-secondary text-xs py-1.5 px-3">⚙ Atur Link Embed</button>
+          </div>
+
+          <div id="looker-embed-container">
+            <div class="rounded-lg p-10 text-center" style="background:#F8FAFC;border:1px dashed #CBD5E1">
+              <svg class="w-10 h-10 mx-auto mb-3" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              <p class="text-sm font-semibold" style="color:#334155">Dashboard Looker Studio belum ditautkan</p>
+              <p class="text-xs mt-1 max-w-md mx-auto" style="color:#64748B">
+                Hubungkan Google Sheets database ke Looker Studio, lalu tempel link embed di sini
+                untuk menampilkan grafik tren temuan dan status CAPA secara visual.
+              </p>
+              <button onclick="openLookerConfigModal()" class="btn-primary text-xs py-1.5 px-3 mt-4">Tautkan Sekarang</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Setup Guide -->
+        <div class="card mt-5" style="background:#EFF6FF;border-color:#BFDBFE">
+          <h3 class="text-sm font-semibold mb-2" style="color:#1E3A8A">Cara menautkan Looker Studio</h3>
+          <ol class="text-xs space-y-1.5" style="color:#1E40AF;list-style:decimal;padding-left:18px">
+            <li>Buka <a href="https://lookerstudio.google.com" target="_blank" class="underline">lookerstudio.google.com</a>, buat laporan baru.</li>
+            <li>Pilih sumber data: Google Sheets → pilih Spreadsheet ISO-DocTrack Database.</li>
+            <li>Hubungkan sheet <code>audit_findings</code>, <code>capa_details</code>, dan <code>kaizen_qcc</code>.</li>
+            <li>Buat grafik diagram lingkaran (status CAPA: Open vs Closed) dan tren temuan bulanan.</li>
+            <li>Klik <strong>Share → Embed report</strong>, salin URL embed-nya.</li>
+            <li>Klik "Atur Link Embed" di atas, tempel URL tersebut.</li>
+          </ol>
+        </div>
+      </div>
+
     </main>
   </div>
 </div><!-- /app-wrapper -->
@@ -726,6 +1008,190 @@
     <div class="flex gap-3 justify-end">
       <button onclick="closeModal('modal-reject')" class="btn-secondary">Batal</button>
       <button id="btn-confirm-reject" onclick="confirmReject()" class="btn-danger">Tolak Pendaftaran</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Looker Studio Config Modal -->
+<div id="modal-looker-config" class="modal-overlay hidden">
+  <div class="modal-box" style="width:480px">
+    <h3 class="text-base font-bold mb-1" style="color:#0F172A">Atur Link Embed Looker Studio</h3>
+    <p class="text-sm mb-5" style="color:#64748B">Tempel URL embed dari Looker Studio (Share → Embed report).</p>
+    <div class="mb-5">
+      <label class="block text-xs font-semibold mb-1.5" style="color:#334155">URL Embed</label>
+      <input id="looker-url-input" type="url" class="form-input" placeholder="https://lookerstudio.google.com/embed/reporting/..." />
+      <p class="text-xs mt-1.5" style="color:#64748B">Disimpan secara lokal di browser ini saja (localStorage).</p>
+    </div>
+    <div class="flex gap-3 justify-end">
+      <button onclick="closeModal('modal-looker-config')" class="btn-secondary">Batal</button>
+      <button onclick="confirmLookerConfig()" class="btn-primary">Simpan & Tampilkan</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Add Audit Schedule Modal -->
+<div id="modal-add-schedule" class="modal-overlay hidden">
+  <div class="modal-box" style="width:480px">
+    <h3 class="text-base font-bold mb-1" style="color:#0F172A">Tambah Jadwal Audit</h3>
+    <p class="text-sm mb-5" style="color:#64748B">Buat jadwal baru untuk Internal/Sertifikasi/Customer Audit.</p>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Tipe Audit <span style="color:#EF4444">*</span></label>
+        <select id="sched-type" class="form-input">
+          <option value="Internal Audit">Internal Audit</option>
+          <option value="Audit Sertifikasi">Audit Sertifikasi</option>
+          <option value="Audit Customer">Audit Customer</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Tanggal Mulai <span style="color:#EF4444">*</span></label>
+          <input id="sched-start" type="date" class="form-input" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Tanggal Selesai</label>
+          <input id="sched-end" type="date" class="form-input" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Auditor</label>
+        <input id="sched-auditor" type="text" class="form-input" placeholder="Nama auditor / tim" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Area / Departemen</label>
+        <input id="sched-area" type="text" class="form-input" placeholder="Contoh: Produksi, QC, Gudang" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Status</label>
+        <select id="sched-status" class="form-input">
+          <option value="Scheduled">Scheduled</option>
+          <option value="Ongoing">Ongoing</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Keterangan</label>
+        <textarea id="sched-notes" class="form-input" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
+      </div>
+    </div>
+    <div class="flex gap-3 justify-end mt-6">
+      <button onclick="closeModal('modal-add-schedule')" class="btn-secondary">Batal</button>
+      <button id="btn-confirm-schedule" onclick="confirmAddSchedule()" class="btn-primary">Simpan Jadwal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Finding Modal -->
+<div id="modal-add-finding" class="modal-overlay hidden">
+  <div class="modal-box" style="width:520px">
+    <h3 class="text-base font-bold mb-1" style="color:#0F172A">Catat Temuan Audit Baru</h3>
+    <p class="text-sm mb-5" style="color:#64748B">Temuan akan otomatis berstatus CAPA: Open.</p>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Kaitkan dengan Jadwal Audit (opsional)</label>
+        <select id="finding-schedule" class="form-input">
+          <option value="">— Tidak terkait jadwal tertentu —</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Klausul ISO</label>
+          <input id="finding-klausul" type="text" class="form-input" placeholder="Contoh: 8.5.1" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Kategori <span style="color:#EF4444">*</span></label>
+          <select id="finding-kategori" class="form-input">
+            <option value="Major NC">Major NC</option>
+            <option value="Minor NC">Minor NC</option>
+            <option value="Observation (OFI)">Observation (OFI)</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Deskripsi Temuan <span style="color:#EF4444">*</span></label>
+        <textarea id="finding-deskripsi" class="form-input" rows="3" placeholder="Jelaskan temuan secara spesifik…"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">PIC (Penanggung Jawab)</label>
+          <input id="finding-pic" type="text" class="form-input" placeholder="Nama PIC" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Due Date</label>
+          <input id="finding-due-date" type="date" class="form-input" />
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3 justify-end mt-6">
+      <button onclick="closeModal('modal-add-finding')" class="btn-secondary">Batal</button>
+      <button id="btn-confirm-finding" onclick="confirmAddFinding()" class="btn-primary">Simpan Temuan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Kaizen Modal -->
+<div id="modal-add-kaizen" class="modal-overlay hidden">
+  <div class="modal-box" style="width:560px;max-height:90vh;overflow-y:auto">
+    <h3 class="text-base font-bold mb-1" style="color:#0F172A">Tambah Proyek Kaizen / QCC</h3>
+    <p class="text-sm mb-5" style="color:#64748B">Dokumentasikan perbaikan berkelanjutan tim Anda.</p>
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Departemen <span style="color:#EF4444">*</span></label>
+          <input id="kaizen-dept" type="text" class="form-input" placeholder="Contoh: Produksi Line 2" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Kategori</label>
+          <select id="kaizen-kategori" class="form-input">
+            <option value="Kaizen">Kaizen</option>
+            <option value="QCC">QCC</option>
+            <option value="Suggestion">Suggestion</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Judul Proyek <span style="color:#EF4444">*</span></label>
+        <input id="kaizen-judul" type="text" class="form-input" placeholder="Contoh: Pengurangan Waktu Setup Mesin X" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">PIC</label>
+        <input id="kaizen-pic" type="text" class="form-input" placeholder="Nama penanggung jawab proyek" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Kondisi Sebelum (Before)</label>
+          <textarea id="kaizen-before" class="form-input" rows="2" placeholder="Deskripsi kondisi awal…"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Kondisi Sesudah (After)</label>
+          <textarea id="kaizen-after" class="form-input" rows="2" placeholder="Deskripsi hasil perbaikan…"></textarea>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Estimasi Cost Saving (Rp)</label>
+          <input id="kaizen-saving" type="number" class="form-input" placeholder="0" min="0" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Tanggal Mulai</label>
+          <input id="kaizen-start" type="date" class="form-input" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:#334155">Status</label>
+        <select id="kaizen-status" class="form-input">
+          <option value="Idea">Idea</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Implemented">Implemented</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex gap-3 justify-end mt-6">
+      <button onclick="closeModal('modal-add-kaizen')" class="btn-secondary">Batal</button>
+      <button id="btn-confirm-kaizen" onclick="confirmAddKaizen()" class="btn-primary">Simpan Proyek</button>
     </div>
   </div>
 </div>
@@ -867,7 +1333,7 @@
 // Cara deploy: Apps Script → Deploy → New Deployment →
 //   Type: Web App | Execute as: Me | Access: Anyone
 // ════════════════════════════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzmaEX0LbLAEWoAFgUi7TWgK0V3X-TW7Fx9dKVPL1Ke_OyvT-2n5obfzQKE54h90cvm1g/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz5p2we_V0cRZKf5dkGQfFmB42BSQAL4jHJ3povD2QUOUp7fwm9utX7Tz7d7CkYMOcjIg/exec';
 
 // IS_DEMO = true  → gunakan data dummy offline (tidak perlu GAS)
 // IS_DEMO = false → semua request dikirim ke GAS_URL di atas
@@ -1352,6 +1818,10 @@ function navigateTo(pageName) {
   if (pageName === 'users'     && state.user?.role === 'admin') loadUsers();
   if (pageName === 'documents')                                  loadDocuments();
   if (pageName === 'dashboard')                                  loadDashboardKPIs();
+  if (pageName === 'audit')                                      loadSchedules();
+  if (pageName === 'findings')                                   loadFindings();
+  if (pageName === 'kaizen')                                     loadKaizen();
+  if (pageName === 'review'    && state.user?.role === 'admin')  loadManagementReview();
 }
 
 
@@ -1390,8 +1860,575 @@ function renderApp() {
 
 
 // ════════════════════════════════════════════════════════════
-// BOOT — Session restore + deep-link handler
+// PHASE 5 — AUDIT SCHEDULES
 // ════════════════════════════════════════════════════════════
+
+const scheduleState = {
+  allSchedules: [],
+  currentFilter: 'all',
+};
+
+async function loadSchedules() {
+  const tbody = document.getElementById('schedule-table-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10" style="color:#64748B">
+    <div class="flex flex-col items-center gap-2">
+      <div style="width:24px;height:24px;border:3px solid rgba(37,99,235,0.2);border-top-color:#2563EB;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+      <p class="text-sm">Memuat jadwal audit…</p>
+    </div></td></tr>`;
+
+  const res = await api('get_audit_schedules');
+  if (!res.success) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8" style="color:#EF4444">⚠ ${res.message}</td></tr>`;
+    return;
+  }
+
+  scheduleState.allSchedules = res.data || [];
+  renderScheduleTable(scheduleState.currentFilter);
+
+  // Populate the "kaitkan jadwal" dropdown in Add Finding modal
+  const sel = document.getElementById('finding-schedule');
+  if (sel) {
+    sel.innerHTML = '<option value="">— Tidak terkait jadwal tertentu —</option>' +
+      scheduleState.allSchedules.map(s => `<option value="${s.id}">${s.tipe_audit} — ${_fmtDate(s.tanggal_mulai)}</option>`).join('');
+  }
+}
+
+function filterSchedules(filter) {
+  scheduleState.currentFilter = filter;
+  ['all', 'Scheduled', 'Ongoing', 'Completed'].forEach(f => {
+    const btn = document.getElementById('sched-filter-' + f);
+    if (!btn) return;
+    if (f === filter) { btn.style.background = '#1E3A8A'; btn.style.color = '#fff'; }
+    else { btn.style.background = '#F1F5F9'; btn.style.color = '#475569'; }
+  });
+  renderScheduleTable(filter);
+}
+
+function renderScheduleTable(filter) {
+  const tbody = document.getElementById('schedule-table-body');
+  const isAdmin = state.user?.role === 'admin';
+  const data = filter === 'all'
+    ? scheduleState.allSchedules
+    : scheduleState.allSchedules.filter(s => s.status === filter);
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10" style="color:#64748B"><p class="text-sm">Belum ada jadwal audit pada kategori ini.</p></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(s => {
+    const statusBadge = {
+      'Scheduled': '<span class="badge" style="background:#DBEAFE;color:#1D4ED8">Scheduled</span>',
+      'Ongoing':   '<span class="badge badge-minor">● Ongoing</span>',
+      'Completed': '<span class="badge badge-approved">✓ Completed</span>',
+    }[s.status] || `<span class="badge badge-guest">${s.status || '—'}</span>`;
+
+    const actions = isAdmin
+      ? `<select onchange="quickUpdateScheduleStatus('${s.id}', this.value)" class="text-xs border rounded px-1.5 py-1" style="border-color:#E2E8F0">
+          <option value="Scheduled" ${s.status==='Scheduled'?'selected':''}>Scheduled</option>
+          <option value="Ongoing" ${s.status==='Ongoing'?'selected':''}>Ongoing</option>
+          <option value="Completed" ${s.status==='Completed'?'selected':''}>Completed</option>
+        </select>`
+      : '—';
+
+    return `<tr>
+      <td class="font-medium" style="color:#0F172A">${s.tipe_audit}</td>
+      <td style="font-size:12px">${_fmtDate(s.tanggal_mulai)}</td>
+      <td style="font-size:12px">${_fmtDate(s.tanggal_selesai)}</td>
+      <td style="font-size:12px;color:#64748B">${s.auditor || '—'}</td>
+      <td><span class="badge" style="background:#F1F5F9;color:#475569">${s.area_departemen || '—'}</span></td>
+      <td>${statusBadge}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function quickUpdateScheduleStatus(scheduleId, newStatus) {
+  const res = await api('update_audit_schedule', { schedule_id: scheduleId, updates: { status: newStatus } });
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) loadSchedules();
+}
+
+function openAddScheduleModal() {
+  document.getElementById('sched-type').value = 'Internal Audit';
+  document.getElementById('sched-start').value = '';
+  document.getElementById('sched-end').value = '';
+  document.getElementById('sched-auditor').value = '';
+  document.getElementById('sched-area').value = '';
+  document.getElementById('sched-status').value = 'Scheduled';
+  document.getElementById('sched-notes').value = '';
+  openModal('modal-add-schedule');
+}
+
+async function confirmAddSchedule() {
+  const tipe_audit = document.getElementById('sched-type').value;
+  const tanggal_mulai = document.getElementById('sched-start').value;
+
+  if (!tanggal_mulai) { showToast('Tanggal mulai wajib diisi.', 'error'); return; }
+
+  const btn = document.getElementById('btn-confirm-schedule');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+
+  const res = await api('add_audit_schedule', {
+    payload: {
+      tipe_audit,
+      tanggal_mulai,
+      tanggal_selesai: document.getElementById('sched-end').value,
+      auditor:         document.getElementById('sched-auditor').value.trim(),
+      area_departemen: document.getElementById('sched-area').value.trim(),
+      status:          document.getElementById('sched-status').value,
+      keterangan:      document.getElementById('sched-notes').value.trim(),
+    }
+  });
+
+  btn.disabled = false; btn.textContent = 'Simpan Jadwal';
+  closeModal('modal-add-schedule');
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) { loadSchedules(); loadDashboardKPIs(); }
+}
+
+function _fmtDate(isoStr) {
+  if (!isoStr) return '—';
+  try {
+    return new Date(isoStr).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch (_) { return isoStr; }
+}
+
+
+// ════════════════════════════════════════════════════════════
+// PHASE 5 — AUDIT FINDINGS & CAPA
+// ════════════════════════════════════════════════════════════
+
+const findingState = {
+  allFindings:   [],
+  currentFilter: 'all',
+};
+
+async function loadFindings() {
+  const tbody = document.getElementById('findings-table-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10" style="color:#64748B">
+    <div class="flex flex-col items-center gap-2">
+      <div style="width:24px;height:24px;border:3px solid rgba(37,99,235,0.2);border-top-color:#2563EB;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+      <p class="text-sm">Memuat temuan…</p>
+    </div></td></tr>`;
+
+  const res = await api('get_findings_with_capa');
+  if (!res.success) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8" style="color:#EF4444">⚠ ${res.message}</td></tr>`;
+    return;
+  }
+
+  findingState.allFindings = res.data || [];
+  renderFindingsSummary();
+  renderFindingsTable(findingState.currentFilter);
+}
+
+function renderFindingsSummary() {
+  const all = findingState.allFindings;
+  document.getElementById('findings-count-major').textContent = all.filter(f => f.kategori === 'Major NC').length;
+  document.getElementById('findings-count-minor').textContent = all.filter(f => f.kategori === 'Minor NC').length;
+  document.getElementById('findings-count-obs').textContent   = all.filter(f => f.kategori === 'Observation (OFI)' || f.kategori === 'Observation').length;
+}
+
+function filterFindings(filter) {
+  findingState.currentFilter = filter;
+  ['all', 'Open', 'In Progress', 'Closed'].forEach(f => {
+    const btn = document.getElementById('find-filter-' + f);
+    if (!btn) return;
+    if (f === filter) { btn.style.background = '#1E3A8A'; btn.style.color = '#fff'; }
+    else { btn.style.background = '#F1F5F9'; btn.style.color = '#475569'; }
+  });
+  renderFindingsTable(filter);
+}
+
+function renderFindingsTable(filter) {
+  const tbody = document.getElementById('findings-table-body');
+  const isAdmin = state.user?.role === 'admin';
+  const data = filter === 'all'
+    ? findingState.allFindings
+    : findingState.allFindings.filter(f => f.status_capa === filter);
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10" style="color:#64748B"><p class="text-sm">Tidak ada temuan pada kategori ini.</p></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(f => {
+    const categoryBadge = {
+      'Major NC': '<span class="badge badge-major">Major NC</span>',
+      'Minor NC': '<span class="badge badge-minor">Minor NC</span>',
+    }[f.kategori] || '<span class="badge badge-obs">Observation</span>';
+
+    const statusBadge = {
+      'Open':        '<span class="badge badge-open">● Open</span>',
+      'In Progress': '<span class="badge badge-progress">● In Progress</span>',
+      'Closed':      '<span class="badge badge-closed">✓ Closed</span>',
+    }[f.status_capa] || `<span class="badge badge-guest">${f.status_capa || '—'}</span>`;
+
+    const actionBtn = isAdmin
+      ? `<button onclick="openCapaForm('${f.id}','${(f.deskripsi_temuan||'').replace(/'/g,"\\'").slice(0,60)}')" class="text-xs px-2 py-1 rounded transition" style="color:#2563EB">${f.capa ? '✏ Edit CAPA' : '+ Isi CAPA'}</button>`
+      : (f.capa ? '<span class="text-xs" style="color:#64748B">CAPA tersedia</span>' : '<span class="text-xs" style="color:#94A3B8">Belum ada CAPA</span>');
+
+    return `<tr>
+      <td class="font-mono text-xs" style="color:#64748B">${f.klausul_iso || '—'}</td>
+      <td style="font-size:13px;max-width:280px">${f.deskripsi_temuan}</td>
+      <td>${categoryBadge}</td>
+      <td style="font-size:12px">${f.pic || '—'}</td>
+      <td>${statusBadge}</td>
+      <td style="font-size:12px;color:#64748B">${_fmtDate(f.due_date)}</td>
+      <td>${actionBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function openAddFindingModal() {
+  document.getElementById('finding-klausul').value = '';
+  document.getElementById('finding-kategori').value = 'Major NC';
+  document.getElementById('finding-deskripsi').value = '';
+  document.getElementById('finding-pic').value = '';
+  document.getElementById('finding-due-date').value = '';
+  if (document.getElementById('finding-schedule').options.length <= 1) loadSchedules();
+  openModal('modal-add-finding');
+}
+
+async function confirmAddFinding() {
+  const deskripsi = document.getElementById('finding-deskripsi').value.trim();
+  if (!deskripsi) { showToast('Deskripsi temuan wajib diisi.', 'error'); return; }
+
+  const btn = document.getElementById('btn-confirm-finding');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+
+  const res = await api('add_finding', {
+    payload: {
+      schedule_id:      document.getElementById('finding-schedule').value,
+      klausul_iso:       document.getElementById('finding-klausul').value.trim(),
+      deskripsi_temuan:  deskripsi,
+      kategori:          document.getElementById('finding-kategori').value,
+      pic:               document.getElementById('finding-pic').value.trim(),
+      due_date:          document.getElementById('finding-due-date').value,
+      tanggal_temuan:    new Date().toISOString(),
+    }
+  });
+
+  btn.disabled = false; btn.textContent = 'Simpan Temuan';
+  closeModal('modal-add-finding');
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) { loadFindings(); loadDashboardKPIs(); }
+}
+
+// ── CAPA Form (5-Why Analysis) ──────────────────────────────
+async function openCapaForm(findingId, findingLabel) {
+  document.getElementById('capa-finding-id').value = findingId;
+  document.getElementById('capa-finding-ref').textContent = findingLabel + '…';
+  document.getElementById('capa-form-panel').classList.remove('hidden');
+
+  // Reset evidence previews
+  ['bukti', 'ishikawa'].forEach(type => {
+    document.getElementById('capa-link-' + type).value = '';
+    document.getElementById('evidence-preview-' + type).classList.add('hidden');
+    document.getElementById('evidence-label-' + type).textContent =
+      type === 'bukti' ? 'Klik untuk pilih file bukti' : 'Klik untuk pilih diagram';
+  });
+
+  // Load existing CAPA if any
+  const res = await api('get_capa', { finding_id: findingId });
+  const capa = res.success ? res.data : null;
+
+  document.getElementById('capa-why1').value = capa?.why1 || '';
+  document.getElementById('capa-why2').value = capa?.why2 || '';
+  document.getElementById('capa-why3').value = capa?.why3 || '';
+  document.getElementById('capa-why4').value = capa?.why4 || '';
+  document.getElementById('capa-why5').value = capa?.why5 || '';
+  document.getElementById('capa-root-cause').value = capa?.root_cause || '';
+  document.getElementById('capa-corrective').value = capa?.corrective_action || '';
+  document.getElementById('capa-preventive').value = capa?.preventive_action || '';
+  document.getElementById('capa-target-date').value = capa?.tanggal_target ? capa.tanggal_target.split('T')[0] : '';
+  document.getElementById('capa-status').value = capa?.status || 'Open';
+
+  if (capa?.link_bukti_drive) {
+    document.getElementById('capa-link-bukti').value = capa.link_bukti_drive;
+    document.getElementById('evidence-link-bukti').href = capa.link_bukti_drive;
+    document.getElementById('evidence-preview-bukti').classList.remove('hidden');
+  }
+  if (capa?.link_ishikawa) {
+    document.getElementById('capa-link-ishikawa').value = capa.link_ishikawa;
+    document.getElementById('evidence-link-ishikawa').href = capa.link_ishikawa;
+    document.getElementById('evidence-preview-ishikawa').classList.remove('hidden');
+  }
+
+  document.getElementById('capa-form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeCapaForm() {
+  document.getElementById('capa-form-panel').classList.add('hidden');
+}
+
+async function handleEvidenceSelect(input, type) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('Ukuran file maksimal 10 MB.', 'error'); return; }
+
+  const label = document.getElementById('evidence-label-' + type);
+  label.textContent = 'Mengupload…';
+
+  try {
+    const base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = e => resolve(e.target.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const findingId = document.getElementById('capa-finding-id').value;
+    const res = await api('upload_capa_evidence', {
+      payload: { fileName: file.name, base64Data, mimeType: file.type || 'application/octet-stream', findingId }
+    });
+
+    if (res.success) {
+      document.getElementById('capa-link-' + type).value = res.fileUrl;
+      document.getElementById('evidence-link-' + type).href = res.fileUrl;
+      document.getElementById('evidence-preview-' + type).classList.remove('hidden');
+      label.textContent = '✓ ' + file.name;
+      showToast('Lampiran berhasil diupload.', 'success');
+    } else {
+      label.textContent = type === 'bukti' ? 'Klik untuk pilih file bukti' : 'Klik untuk pilih diagram';
+      showToast(res.message, 'error');
+    }
+  } catch (err) {
+    label.textContent = type === 'bukti' ? 'Klik untuk pilih file bukti' : 'Klik untuk pilih diagram';
+    showToast('Gagal membaca file: ' + err.message, 'error');
+  }
+}
+
+async function handleSaveCapa() {
+  const findingId = document.getElementById('capa-finding-id').value;
+  const rootCause = document.getElementById('capa-root-cause').value.trim();
+
+  if (!rootCause) { showToast('Root Cause wajib diisi sebelum menyimpan.', 'error'); return; }
+
+  const btn = document.getElementById('btn-save-capa');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Menyimpan…';
+
+  const res = await api('save_capa', {
+    payload: {
+      finding_id:         findingId,
+      why1: document.getElementById('capa-why1').value.trim(),
+      why2: document.getElementById('capa-why2').value.trim(),
+      why3: document.getElementById('capa-why3').value.trim(),
+      why4: document.getElementById('capa-why4').value.trim(),
+      why5: document.getElementById('capa-why5').value.trim(),
+      root_cause:         rootCause,
+      corrective_action:  document.getElementById('capa-corrective').value.trim(),
+      preventive_action:  document.getElementById('capa-preventive').value.trim(),
+      link_bukti_drive:   document.getElementById('capa-link-bukti').value,
+      link_ishikawa:      document.getElementById('capa-link-ishikawa').value,
+      status:             document.getElementById('capa-status').value,
+      tanggal_target:     document.getElementById('capa-target-date').value,
+    }
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Simpan CAPA';
+
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) {
+    closeCapaForm();
+    loadFindings();
+    loadDashboardKPIs();
+  }
+}
+
+
+// ════════════════════════════════════════════════════════════
+// PHASE 5 — KAIZEN / QCC
+// ════════════════════════════════════════════════════════════
+
+async function loadKaizen() {
+  const tbody = document.getElementById('kaizen-table-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10" style="color:#64748B">
+    <div class="flex flex-col items-center gap-2">
+      <div style="width:24px;height:24px;border:3px solid rgba(37,99,235,0.2);border-top-color:#2563EB;border-radius:50%;animation:spin 0.7s linear infinite"></div>
+      <p class="text-sm">Memuat proyek…</p>
+    </div></td></tr>`;
+
+  const res = await api('get_kaizen');
+  if (!res.success) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8" style="color:#EF4444">⚠ ${res.message}</td></tr>`;
+    return;
+  }
+
+  const data = res.data || [];
+
+  // Summary cards
+  document.getElementById('kaizen-count-total').textContent = data.length;
+  document.getElementById('kaizen-count-progress').textContent = data.filter(k => k.status === 'In Progress').length;
+  document.getElementById('kaizen-count-implemented').textContent = data.filter(k => k.status === 'Implemented').length;
+  const totalSaving = data.reduce((sum, k) => sum + (parseFloat(k.estimasi_cost_saving) || 0), 0);
+  document.getElementById('kaizen-total-saving').textContent = 'Rp ' + totalSaving.toLocaleString('id-ID');
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10" style="color:#64748B"><p class="text-sm">Belum ada proyek Kaizen/QCC. Mulai dokumentasikan perbaikan tim Anda!</p></td></tr>`;
+    return;
+  }
+
+  const isAdmin = state.user?.role === 'admin';
+
+  tbody.innerHTML = data.map(k => {
+    const statusBadge = {
+      'Idea':        '<span class="badge" style="background:#F1F5F9;color:#475569">Idea</span>',
+      'In Progress': '<span class="badge badge-progress">● In Progress</span>',
+      'Implemented': '<span class="badge badge-closed">✓ Implemented</span>',
+      'Cancelled':   '<span class="badge badge-major">Cancelled</span>',
+    }[k.status] || k.status;
+
+    const saving = k.estimasi_cost_saving ? 'Rp ' + parseFloat(k.estimasi_cost_saving).toLocaleString('id-ID') : '—';
+
+    const actions = isAdmin
+      ? `<select onchange="quickUpdateKaizenStatus('${k.id}', this.value)" class="text-xs border rounded px-1.5 py-1" style="border-color:#E2E8F0">
+          <option value="Idea" ${k.status==='Idea'?'selected':''}>Idea</option>
+          <option value="In Progress" ${k.status==='In Progress'?'selected':''}>In Progress</option>
+          <option value="Implemented" ${k.status==='Implemented'?'selected':''}>Implemented</option>
+          <option value="Cancelled" ${k.status==='Cancelled'?'selected':''}>Cancelled</option>
+        </select>`
+      : '—';
+
+    return `<tr>
+      <td style="font-size:13px">${k.departemen}</td>
+      <td class="font-medium" style="color:#0F172A;font-size:13px">${k.judul_proyek}</td>
+      <td style="font-size:12px;color:#64748B">${k.pic || '—'}</td>
+      <td><span class="badge" style="background:#EFF6FF;color:#1D4ED8">${k.kategori || 'Kaizen'}</span></td>
+      <td style="font-size:12px;font-weight:600;color:#2563EB">${saving}</td>
+      <td style="font-size:12px">${_fmtDate(k.tanggal_mulai)}</td>
+      <td>${statusBadge}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function quickUpdateKaizenStatus(kaizenId, newStatus) {
+  const res = await api('update_kaizen', { kaizen_id: kaizenId, updates: { status: newStatus } });
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) { loadKaizen(); loadDashboardKPIs(); }
+}
+
+function openAddKaizenModal() {
+  document.getElementById('kaizen-dept').value = '';
+  document.getElementById('kaizen-kategori').value = 'Kaizen';
+  document.getElementById('kaizen-judul').value = '';
+  document.getElementById('kaizen-pic').value = '';
+  document.getElementById('kaizen-before').value = '';
+  document.getElementById('kaizen-after').value = '';
+  document.getElementById('kaizen-saving').value = '';
+  document.getElementById('kaizen-start').value = '';
+  document.getElementById('kaizen-status').value = 'Idea';
+  openModal('modal-add-kaizen');
+}
+
+async function confirmAddKaizen() {
+  const dept  = document.getElementById('kaizen-dept').value.trim();
+  const judul = document.getElementById('kaizen-judul').value.trim();
+
+  if (!dept || !judul) { showToast('Departemen dan Judul Proyek wajib diisi.', 'error'); return; }
+
+  const btn = document.getElementById('btn-confirm-kaizen');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+
+  const res = await api('add_kaizen', {
+    payload: {
+      departemen:            dept,
+      judul_proyek:          judul,
+      pic:                   document.getElementById('kaizen-pic').value.trim(),
+      deskripsi_before:      document.getElementById('kaizen-before').value.trim(),
+      deskripsi_after:       document.getElementById('kaizen-after').value.trim(),
+      estimasi_cost_saving:  document.getElementById('kaizen-saving').value || 0,
+      currency:              'IDR',
+      tanggal_mulai:         document.getElementById('kaizen-start').value,
+      status:                document.getElementById('kaizen-status').value,
+      kategori:              document.getElementById('kaizen-kategori').value,
+    }
+  });
+
+  btn.disabled = false; btn.textContent = 'Simpan Proyek';
+  closeModal('modal-add-kaizen');
+  showToast(res.message, res.success ? 'success' : 'error');
+  if (res.success) { loadKaizen(); loadDashboardKPIs(); }
+}
+
+
+// ════════════════════════════════════════════════════════════
+// PHASE 5 — MANAGEMENT REVIEW (Looker Studio Embed)
+// ════════════════════════════════════════════════════════════
+
+async function loadManagementReview() {
+  // Stat cards
+  const res = await api('get_dashboard_stats');
+  if (res.success) {
+    document.getElementById('review-total-findings').textContent  = res.data.totalFindings;
+    document.getElementById('review-capa-open').textContent       = res.data.capaOpen;
+    document.getElementById('review-total-schedules').textContent = res.data.totalSchedules;
+  }
+  // CAPA Closed dihitung terpisah dari findings
+  const findRes = await api('get_findings_with_capa');
+  if (findRes.success) {
+    const closed = findRes.data.filter(f => f.status_capa === 'Closed').length;
+    document.getElementById('review-capa-closed').textContent = closed;
+  }
+
+  // Render Looker embed if URL saved
+  renderLookerEmbed();
+}
+
+function renderLookerEmbed() {
+  const url = localStorage.getItem('looker_studio_url');
+  const container = document.getElementById('looker-embed-container');
+  if (!container) return;
+
+  if (url) {
+    container.innerHTML = `
+      <div class="rounded-lg overflow-hidden border" style="border-color:#E2E8F0;height:600px">
+        <iframe src="${url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+      </div>`;
+  } else {
+    container.innerHTML = `
+      <div class="rounded-lg p-10 text-center" style="background:#F8FAFC;border:1px dashed #CBD5E1">
+        <svg class="w-10 h-10 mx-auto mb-3" fill="none" stroke="#94A3B8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <p class="text-sm font-semibold" style="color:#334155">Dashboard Looker Studio belum ditautkan</p>
+        <p class="text-xs mt-1 max-w-md mx-auto" style="color:#64748B">
+          Hubungkan Google Sheets database ke Looker Studio, lalu tempel link embed di sini
+          untuk menampilkan grafik tren temuan dan status CAPA secara visual.
+        </p>
+        <button onclick="openLookerConfigModal()" class="btn-primary text-xs py-1.5 px-3 mt-4">Tautkan Sekarang</button>
+      </div>`;
+  }
+}
+
+function openLookerConfigModal() {
+  document.getElementById('looker-url-input').value = localStorage.getItem('looker_studio_url') || '';
+  openModal('modal-looker-config');
+}
+
+function confirmLookerConfig() {
+  const url = document.getElementById('looker-url-input').value.trim();
+  if (url) {
+    localStorage.setItem('looker_studio_url', url);
+    showToast('Link Looker Studio berhasil disimpan.', 'success');
+  } else {
+    localStorage.removeItem('looker_studio_url');
+    showToast('Link Looker Studio dihapus.', 'info');
+  }
+  closeModal('modal-looker-config');
+  renderLookerEmbed();
+}
+
+
+
 (async function boot() {
   const params = new URLSearchParams(window.location.search);
 
@@ -1434,7 +2471,7 @@ function renderApp() {
 // DASHBOARD — KPI Cards
 // ════════════════════════════════════════════════════════════
 async function loadDashboardKPIs() {
-  // Total Dokumen — terhubung ke Google Drive (Phase 3, sudah aktif)
+  // Total Dokumen — terhubung ke Google Drive (Phase 3)
   const totalEl    = document.getElementById('kpi-total-docs');
   const totalSubEl = document.getElementById('kpi-total-docs-sub');
   if (totalEl) {
@@ -1451,15 +2488,26 @@ async function loadDashboardKPIs() {
     }
   }
 
-  // CAPA Terbuka, Audit Bulan Ini, Kaizen Aktif — menunggu Phase 5
-  // (sheet audit_findings, capa_details, kaizen_qcc sudah ada di backend
-  //  sejak Phase 1, tapi belum ada UI input untuk mengisinya)
-  const capaEl   = document.getElementById('kpi-capa-open');
-  const auditEl  = document.getElementById('kpi-audit-month');
-  const kaizenEl = document.getElementById('kpi-kaizen-active');
-  if (capaEl)   capaEl.textContent   = '0';
-  if (auditEl)  auditEl.textContent  = '0';
-  if (kaizenEl) kaizenEl.textContent = '0';
+  // CAPA Terbuka, Audit Bulan Ini, Kaizen Aktif — terhubung ke Phase 5
+  const capaEl    = document.getElementById('kpi-capa-open');
+  const auditEl   = document.getElementById('kpi-audit-month');
+  const kaizenEl  = document.getElementById('kpi-kaizen-active');
+  const notice    = document.getElementById('dashboard-phase5-notice');
+
+  if (capaEl) {
+    const statsRes = await api('get_dashboard_stats');
+    if (statsRes.success) {
+      capaEl.textContent   = statsRes.data.capaOpen;
+      auditEl.textContent  = statsRes.data.auditThisMonth;
+      kaizenEl.textContent = statsRes.data.kaizenActive;
+      // Sembunyikan notice biru karena modul sudah aktif sepenuhnya
+      if (notice) notice.classList.add('hidden');
+    } else {
+      capaEl.textContent   = '0';
+      auditEl.textContent  = '0';
+      kaizenEl.textContent = '0';
+    }
+  }
 }
 
 
